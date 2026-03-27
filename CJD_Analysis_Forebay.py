@@ -4,7 +4,7 @@ CJD Forebay Water Temperature — Full Analysis & Figures
 ================================================================================
 Chief Joseph Dam (CJD) Forebay — Historical Trend Analysis & Climate Projections
 Primary Station of Interest: CHJ (Chief Joseph Dam Forebay)
-Supporting Upstream Stations: FDRW → GCGW (provided as context only)
+Supporting Stations: FDRW → GCGW → CHQW (provided for comparison and context)
 
 --------------------------------------------------------------------------------
 DATA SOURCES
@@ -16,8 +16,10 @@ WATER TEMPERATURE DATA:
   Stations: FDRW  — Grand Coulee Dam Forebay
             GCGW  — Grand Coulee Dam Tailrace
             CHJ   — Chief Joseph Dam Forebay  ← Primary station
+            CHQW  — Chief Joseph Dam Tailrace (comparison)
   Format  : Hourly water temperature (°C and °F)
-  Period  : CHJ: 2000–2025
+  Period  : CHJ: 2000–2025 (primary analysis)
+            CHQW: 1997–2025 (comparison)
             Others (FDRW, GCGW): 2000–2025
 
 AIR TEMPERATURE DATA:
@@ -141,6 +143,8 @@ STATION_FILES = {
     'FDRW': r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\FDRW\FDRW_Hourly_Data_1995_2025.xlsx',
     'GCGW': r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\GCGW\GCGW_Hourly_Data_1995_2025.xlsx',
     'CHJ':  r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\CHJ\CHJ_Hourly_Data_1995_2025.xlsx',
+    # CHQW: included for comparison purposes; primary analysis focus is on CHJ
+    'CHQW': r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\CHQW\CHQW_Hourly_Data_1995_2025.xlsx',
 }
 
 AIR_TEMP_FILE = r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\Douglas_Temp_1995_2025.csv'
@@ -148,11 +152,12 @@ AIR_TEMP_FILE = r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\D
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 SUMMER_MONTHS  = [7, 8]
-STATION_ORDER  = ['FDRW', 'GCGW', 'CHJ']
+STATION_ORDER  = ['FDRW', 'GCGW', 'CHJ', 'CHQW']
 STATION_LABELS = {
     'FDRW': 'Grand Coulee Forebay (FDRW)',
     'GCGW': 'Grand Coulee Tailrace (GCGW)',
     'CHJ':  'Chief Joseph Forebay (CHJ)',
+    'CHQW': 'Chief Joseph Tailrace (CHQW)',
 }
 
 # ── CMIP5 Climate Projection Delta Computation ────────────────────────────────
@@ -258,7 +263,8 @@ CLIMATE_SCENARIOS = [
 C = {
     'FDRW':  '#1a6faf',
     'GCGW':  '#2d9e6b',
-    'CHJ':   '#c0392b',
+    'CHJ':   '#c0392b',      # Primary analysis station (red)
+    'CHQW':  '#e07b2a',      # Included for comparison (orange)
     'air':   '#636e72',
     'trend': '#2c3e50',
 }
@@ -944,7 +950,8 @@ def export_excel(results):
     HDR_ALIGN = Alignment(horizontal='center')
     SEC_FILL  = PatternFill(start_color='1a4f72', end_color='1a4f72', fill_type='solid')
     SEC_FONT  = Font(color='FFFFFF', bold=True, size=10)
-    CHJ_FILL = PatternFill(start_color='fde8e8', end_color='fde8e8', fill_type='solid')
+    CHJ_FILL  = PatternFill(start_color='fde8e8', end_color='fde8e8', fill_type='solid')  # Primary station highlight
+    CHQW_FILL = PatternFill(start_color='fff4e6', end_color='fff4e6', fill_type='solid')  # Comparison station highlight
     BOLD      = Font(bold=True, size=10)
     NORMAL    = Font(size=10)
     ITALIC    = Font(italic=True, size=10)
@@ -997,7 +1004,7 @@ def export_excel(results):
     r = sec_header(ws0, r, 'WATER TEMPERATURE DATA')
     r = add_row(ws0, r, 'Source', 'DART — Columbia Basin Research, University of Washington')
     r = add_row(ws0, r, 'URL', 'http://www.cbr.washington.edu/dart/query/river_graph_wmq')
-    r = add_row(ws0, r, 'Stations', 'FDRW (GC Forebay), GCGW (GC Tailrace), CHJ (CJ Forebay)')
+    r = add_row(ws0, r, 'Stations', 'FDRW (GC Forebay), GCGW (GC Tailrace), CHJ (CJ Forebay - PRIMARY), CHQW (CJ Tailrace - comparison)')
     r = add_row(ws0, r, 'Period', f'{water_yr_range}, hourly resolution')
     r += 1
     r = sec_header(ws0, r, 'AIR TEMPERATURE DATA')
@@ -1028,6 +1035,9 @@ def export_excel(results):
         if row_data['Code'] == 'CHJ':
             for cell in ws1[ws1.max_row]:
                 cell.fill = CHJ_FILL
+        elif row_data['Code'] == 'CHQW':
+            for cell in ws1[ws1.max_row]:
+                cell.fill = CHQW_FILL
     autofit(ws1)
 
     # ═════════════════════════════════════════════════════════════════════════
@@ -1043,6 +1053,9 @@ def export_excel(results):
         if row_data['Code'] == 'CHJ':
             for cell in ws1m[ws1m.max_row]:
                 cell.fill = CHJ_FILL
+        elif row_data['Code'] == 'CHQW':
+            for cell in ws1m[ws1m.max_row]:
+                cell.fill = CHQW_FILL
     autofit(ws1m)
 
     # ═════════════════════════════════════════════════════════════════════════
