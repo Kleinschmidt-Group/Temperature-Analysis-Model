@@ -1,10 +1,10 @@
 """
 ================================================================================
-CJD Tailrace Water Temperature — Full Analysis & Figures
+CJD Forebay Water Temperature — Full Analysis & Figures
 ================================================================================
-Chief Joseph Dam (CJD) Tailrace — Historical Trend Analysis & Climate Projections
-Primary Station of Interest: CHQW (Chief Joseph Dam Tailrace)
-Supporting Upstream Stations: FDRW → GCGW → CHJ (provided as context only)
+Chief Joseph Dam (CJD) Forebay — Historical Trend Analysis & Climate Projections
+Primary Station of Interest: CHJ (Chief Joseph Dam Forebay)
+Supporting Upstream Stations: FDRW → GCGW (provided as context only)
 
 --------------------------------------------------------------------------------
 DATA SOURCES
@@ -15,11 +15,10 @@ WATER TEMPERATURE DATA:
   URL     : http://www.cbr.washington.edu/dart/query/river_graph_wmq
   Stations: FDRW  — Grand Coulee Dam Forebay
             GCGW  — Grand Coulee Dam Tailrace
-            CHJ   — Chief Joseph Dam Forebay
-            CHQW  — Chief Joseph Dam Tailrace  ← Primary station
+            CHJ   — Chief Joseph Dam Forebay  ← Primary station
   Format  : Hourly water temperature (°C and °F)
-  Period  : CHQW: 1997–2025 (after QA/QC removes 1995-1996 null values)
-            Others (FDRW, GCGW, CHJ): 2000–2025
+  Period  : CHJ: 2000–2025
+            Others (FDRW, GCGW): 2000–2025
 
 AIR TEMPERATURE DATA:
   Source  : NOAA National Centers for Environmental Information (NCEI)
@@ -35,7 +34,7 @@ METHODS
 --------------------------------------------------------------------------------
   1. Mann-Kendall trend test
      Reference: Hirsch et al. (1991); Helsel & Hirsch (2002)
-     Applied to annual July/August mean water temperatures, 1997–2025
+     Applied to annual July/August mean water temperatures, 2000–2025
 
   2. Theil-Sen slope estimator with 95% confidence interval
      Reference: Helsel & Hirsch (2002)
@@ -44,7 +43,7 @@ METHODS
   3. Mohseni et al. (1998) nonlinear logistic air-water temperature regression
         Tw = μ + (α − μ) / (1 + exp(γ(β − Ta)))
      Reference: Mohseni et al. (1998); Mantua et al. (2010); WACCIA Ch. 6
-     Fit to all weekly air-water temperature pairs (1997–2025)
+     Fit to all weekly air-water temperature pairs (2000–2025)
      Goodness-of-fit assessed via Nash-Sutcliffe Efficiency (NSE)
 
   4. Future climate projections via CMIP5 air temperature deltas
@@ -66,15 +65,15 @@ OUTPUTS
   CJD_Temperature_Results.xlsx             — trend summary, projections, Mohseni params
   Fig1_Annual_Summer_Trends.png            — annual Jul/Aug means, all stations
   Fig2_Seasonal_Climatology.png            — mean annual temperature cycle
-  Fig3_CHQW_Trend_Detail.png              — CHQW detailed trend + air temp overlay
-  Fig4_JulAug_Daily_By_Year.png           — daily Jul/Aug temps, all 26 years overlaid
-  Fig5_Mohseni_Regression.png             — Mohseni air-water regression by season
-  Fig6_Mohseni_Observed_vs_Predicted.png  — observed vs predicted weekly scatter
-  Fig7_JulAug_Obs_vs_Pred_TimeSeries.png  — Jul/Aug annual observed vs predicted
-  Fig8_Mohseni_All_Years_Overlaid.png     — all 26 years overlaid on Mohseni curve
-  Fig9_Projected_Temps_Bar.png            — projected temps bar chart by scenario
-  Fig10_Projection_Points_Mohseni.png     — projection points on Mohseni curve
-  Fig11_Period_Comparison_Boxplots.png    — early vs. recent period comparison
+  Fig3_CHJ_Trend_Detail.png                — CHJ detailed trend + air temp overlay
+  Fig4_JulAug_Daily_By_Year.png            — daily Jul/Aug temps, all years overlaid
+  Fig5_Mohseni_Regression.png              — Mohseni air-water regression by season
+  Fig6_Mohseni_Observed_vs_Predicted.png   — observed vs predicted weekly scatter
+  Fig7_JulAug_Obs_vs_Pred_TimeSeries.png   — Jul/Aug annual observed vs predicted
+  Fig8_Mohseni_All_Years_Overlaid.png      — all years overlaid on Mohseni curve
+  Fig9_Projected_Temps_Bar.png             — projected temps bar chart by scenario
+  Fig10_Projection_Points_Mohseni.png      — projection points on Mohseni curve
+  Fig11_Period_Comparison_Boxplots.png     — early vs. recent period comparison
 
 --------------------------------------------------------------------------------
 REFERENCES
@@ -142,8 +141,6 @@ STATION_FILES = {
     'FDRW': r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\FDRW\FDRW_Hourly_Data_1995_2025.xlsx',
     'GCGW': r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\GCGW\GCGW_Hourly_Data_1995_2025.xlsx',
     'CHJ':  r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\CHJ\CHJ_Hourly_Data_1995_2025.xlsx',
-    # CHQW: full record 1995–2025; analysis uses 1997–2025 after QA/QC
-    'CHQW': r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\CHQW\CHQW_Hourly_Data_1995_2025.xlsx',
 }
 
 AIR_TEMP_FILE = r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\Documents\CJD_Temp_Monitoring\Data\Douglas_Temp_1995_2025.csv'
@@ -151,12 +148,11 @@ AIR_TEMP_FILE = r'C:\Users\Ethan.Muhlestein\OneDrive - Kleinschmidt Associates\D
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 SUMMER_MONTHS  = [7, 8]
-STATION_ORDER  = ['FDRW', 'GCGW', 'CHJ', 'CHQW']
+STATION_ORDER  = ['FDRW', 'GCGW', 'CHJ']
 STATION_LABELS = {
     'FDRW': 'Grand Coulee Forebay (FDRW)',
     'GCGW': 'Grand Coulee Tailrace (GCGW)',
     'CHJ':  'Chief Joseph Forebay (CHJ)',
-    'CHQW': 'Chief Joseph Tailrace (CHQW)',
 }
 
 # ── CMIP5 Climate Projection Delta Computation ────────────────────────────────
@@ -262,8 +258,7 @@ CLIMATE_SCENARIOS = [
 C = {
     'FDRW':  '#1a6faf',
     'GCGW':  '#2d9e6b',
-    'CHJ':   '#e07b2a',
-    'CHQW':  '#c0392b',
+    'CHJ':   '#c0392b',
     'air':   '#636e72',
     'trend': '#2c3e50',
 }
@@ -664,13 +659,13 @@ def run_analysis(stations, air):
     def ann_month(df, month):
         return df[df['month'] == month].groupby('year')['wtc'].mean()
 
-    # ── Build weekly air-water pairs for Mohseni model (CHQW) ─────────────
-    chqw = stations['CHQW']
-    chqw_wk = (chqw.groupby(['year', 'week'])['wtc'].mean().reset_index()
-               .assign(yw=lambda d: d['year'].astype(str) + '_' + d['week'].astype(str).str.zfill(2)))
+    # ── Build weekly air-water pairs for Mohseni model (CHJ) ─────────────
+    chj = stations['CHJ']
+    chj_wk = (chj.groupby(['year', 'week'])['wtc'].mean().reset_index()
+              .assign(yw=lambda d: d['year'].astype(str) + '_' + d['week'].astype(str).str.zfill(2)))
     air_wk  = (air.groupby(['year', 'week'])['tavg_c'].mean().reset_index()
                .assign(yw=lambda d: d['year'].astype(str) + '_' + d['week'].astype(str).str.zfill(2)))
-    merged  = chqw_wk.merge(air_wk[['yw', 'tavg_c']], on='yw').dropna()
+    merged  = chj_wk.merge(air_wk[['yw', 'tavg_c']], on='yw').dropna()
 
     # ── Mohseni model fits ────────────────────────────────────────────────────
     popt_all, NSE_all = fit_mohseni(merged['tavg_c'].values, merged['wtc'].values)
@@ -678,11 +673,11 @@ def run_analysis(stations, air):
     popt_jja, NSE_jja = fit_mohseni(merged.loc[jja_mask, 'tavg_c'].values,
                                     merged.loc[jja_mask, 'wtc'].values)
 
-    print(f"\n  Mohseni Model Parameters — CHQW (All Weeks)")
+    print(f"\n  Mohseni Model Parameters — CHJ (All Weeks)")
     print(f"    μ = {popt_all[0]:.3f} °C,  α = {popt_all[1]:.3f} °C,"
           f"  γ = {popt_all[2]:.4f},  β = {popt_all[3]:.3f} °C")
     print(f"    NSE = {NSE_all:.4f}  {'(Good ≥0.7)' if NSE_all >= 0.7 else '(Moderate)'}")
-    print(f"\n  Mohseni Model Parameters — CHQW (Jul–Aug Only)")
+    print(f"\n  Mohseni Model Parameters — CHJ (Jul–Aug Only)")
     print(f"    μ = {popt_jja[0]:.3f} °C,  α = {popt_jja[1]:.3f} °C,"
           f"  γ = {popt_jja[2]:.4f},  β = {popt_jja[3]:.3f} °C")
     print(f"    NSE = {NSE_jja:.4f}")
@@ -752,17 +747,17 @@ def run_analysis(stations, air):
             })
     monthly_summary_df = pd.DataFrame(monthly_summary_rows)
 
-    # ── CHQW-specific stats for figures ──────────────────────────────────────
-    ann_chqw     = ann_summer(stations['CHQW'])
-    x_c, y_c     = ann_chqw.index.values.astype(float), ann_chqw.values
+    # ── CHJ-specific stats for figures ──────────────────────────────────────
+    ann_chj     = ann_summer(stations['CHJ'])
+    x_c, y_c     = ann_chj.index.values.astype(float), ann_chj.values
     tau_c, p_c, S_c, Z_c, dir_c = mann_kendall(y_c)
     sl_c, ic_c, ci_lo_c, ci_hi_c = theil_sen(x_c, y_c)
 
-    # CHQW month-specific annual means and trends
-    ann_chqw_jul = ann_month(stations['CHQW'], 7)
-    ann_chqw_aug = ann_month(stations['CHQW'], 8)
-    x_cj, y_cj = ann_chqw_jul.index.values.astype(float), ann_chqw_jul.values
-    x_ca, y_ca = ann_chqw_aug.index.values.astype(float), ann_chqw_aug.values
+    # CHJ month-specific annual means and trends
+    ann_chj_jul = ann_month(stations['CHJ'], 7)
+    ann_chj_aug = ann_month(stations['CHJ'], 8)
+    x_cj, y_cj = ann_chj_jul.index.values.astype(float), ann_chj_jul.values
+    x_ca, y_ca = ann_chj_aug.index.values.astype(float), ann_chj_aug.values
     tau_cj, p_cj, *_ = mann_kendall(y_cj)
     sl_cj, ic_cj, ci_lo_cj, ci_hi_cj = theil_sen(x_cj, y_cj)
     tau_ca, p_ca, *_ = mann_kendall(y_ca)
@@ -785,16 +780,16 @@ def run_analysis(stations, air):
     sl_aa, ic_aa, *_ = theil_sen(x_aa, y_aa)
 
     # ── Build climate scenarios with actual baseline year range ─────────────
-    baseline_yr_label = f"{int(chqw.year.min())}–{int(chqw.year.max())}"
+    baseline_yr_label = f"{int(chj.year.min())}–{int(chj.year.max())}"
     climate_scenarios = [
         (f'Baseline ({baseline_yr_label})', 0.00, '#2980b9'),
     ] + [(label, delta, color) for label, delta, color in CLIMATE_SCENARIOS[1:]]
 
     # ── Future projections ────────────────────────────────────────────────────
     baseline_air = air[air['month'].isin(SUMMER_MONTHS)]['tavg_c'].mean()
-    baseline_wt  = stations['CHQW'][stations['CHQW']['month'].isin(SUMMER_MONTHS)]['wtc'].mean()
+    baseline_wt  = stations['CHJ'][stations['CHJ']['month'].isin(SUMMER_MONTHS)]['wtc'].mean()
 
-    baseline_yr_label = f"{int(chqw.year.min())}–{int(chqw.year.max())}"
+    baseline_yr_label = f"{int(chj.year.min())}–{int(chj.year.max())}"
     print(f"\n  Observed baseline ({baseline_yr_label}):")
     print(f"    Jul/Aug mean air temp  : {baseline_air:.2f} °C  ({baseline_air*9/5+32:.2f} °F)")
     print(f"    Jul/Aug mean water temp: {baseline_wt:.2f} °C  ({baseline_wt*9/5+32:.2f} °F)")
@@ -825,13 +820,13 @@ def run_analysis(stations, air):
     # ── Month-specific projections (July and August separately) ──────────────
     # Uses observed monthly water temperature as the baseline and applies only
     # the Mohseni-derived *change* (delta) for each climate scenario.  This
-    # preserves the empirical fact that August is warmer than July at CHQW
+    # preserves the empirical fact that August is warmer than July at CHJ
     # (due to cumulative seasonal heat loading in Rufus Woods Lake) while
     # still using the Mohseni curve to estimate sensitivity to air warming.
     monthly_proj = {}
     for month, month_name in [(7, 'July'), (8, 'August')]:
         m_air_baseline = air[air['month'] == month]['tavg_c'].mean()
-        m_wt_baseline  = stations['CHQW'][(stations['CHQW']['month'] == month)]['wtc'].mean()
+        m_wt_baseline  = stations['CHJ'][(stations['CHJ']['month'] == month)]['wtc'].mean()
         m_tw_model     = float(mohseni(m_air_baseline, *popt_all))
 
         m_rows = []
@@ -862,9 +857,9 @@ def run_analysis(stations, air):
             })
         monthly_proj[month_name] = pd.DataFrame(m_rows)
 
-    # ── Week-by-week water temperature stats for July and August (CHQW) ────
-    chqw_summer = stations['CHQW'][stations['CHQW']['month'].isin([7, 8])].copy()
-    weekly_by_yr = chqw_summer.groupby(['year', 'week', 'month'])['wtc'].mean().reset_index()
+    # ── Week-by-week water temperature stats for July and August (CHJ) ────
+    chj_summer = stations['CHJ'][stations['CHJ']['month'].isin([7, 8])].copy()
+    weekly_by_yr = chj_summer.groupby(['year', 'week', 'month'])['wtc'].mean().reset_index()
 
     # Stats per ISO week: mean/min/max across all years for each week
     week_stats_df = weekly_by_yr.groupby('week').agg(
@@ -883,7 +878,7 @@ def run_analysis(stations, air):
     week_stats_df = week_stats_df[(week_stats_df['primary_month'].isin([7, 8])) &
                                   (week_stats_df['n_years'] >= 3)].sort_values('week').reset_index(drop=True)
 
-    print(f"\n  Week-by-week water temp stats (CHQW, Jul-Aug weeks):")
+    print(f"\n  Week-by-week water temp stats (CHJ, Jul-Aug weeks):")
     for _, r in week_stats_df.iterrows():
         m_name = 'Jul' if r['primary_month'] == 7 else 'Aug'
         print(f"    Week {int(r['week']):>2} ({m_name}): mean={r['mean_tw']:.2f}, "
@@ -896,8 +891,8 @@ def run_analysis(stations, air):
         stations=stations, air=air, merged=merged,
         popt_all=popt_all, NSE_all=NSE_all,
         popt_jja=popt_jja, NSE_jja=NSE_jja,
-        ann_chqw=ann_chqw,
-        ann_chqw_jul=ann_chqw_jul, ann_chqw_aug=ann_chqw_aug,
+        ann_chj=ann_chj,
+        ann_chj_jul=ann_chj_jul, ann_chj_aug=ann_chj_aug,
         x_c=x_c, y_c=y_c,
         tau_c=tau_c, p_c=p_c, sl_c=sl_c, ic_c=ic_c,
         ci_lo_c=ci_lo_c, ci_hi_c=ci_hi_c,
@@ -930,14 +925,14 @@ def export_excel(results):
     NSE_all     = results['NSE_all']
     popt_jja    = results['popt_jja']
     NSE_jja     = results['NSE_jja']
-    ann_chqw    = results['ann_chqw']
+    ann_chj     = results['ann_chj']
     baseline_air = results['baseline_air']
     baseline_wt  = results['baseline_wt']
     stations_data = results['stations']
     air_data     = results['air']
 
     # Determine actual data periods from loaded data
-    chqw_yr_range = f"{int(ann_chqw.index.min())}–{int(ann_chqw.index.max())}"
+    chj_yr_range = f"{int(ann_chj.index.min())}–{int(ann_chj.index.max())}"
     water_yr_min = min(stations_data[s]['year'].min() for s in STATION_ORDER)
     water_yr_max = max(stations_data[s]['year'].max() for s in STATION_ORDER)
     water_yr_range = f"{water_yr_min}–{water_yr_max}"
@@ -949,7 +944,7 @@ def export_excel(results):
     HDR_ALIGN = Alignment(horizontal='center')
     SEC_FILL  = PatternFill(start_color='1a4f72', end_color='1a4f72', fill_type='solid')
     SEC_FONT  = Font(color='FFFFFF', bold=True, size=10)
-    CHQW_FILL = PatternFill(start_color='fde8e8', end_color='fde8e8', fill_type='solid')
+    CHJ_FILL = PatternFill(start_color='fde8e8', end_color='fde8e8', fill_type='solid')
     BOLD      = Font(bold=True, size=10)
     NORMAL    = Font(size=10)
     ITALIC    = Font(italic=True, size=10)
@@ -1002,7 +997,7 @@ def export_excel(results):
     r = sec_header(ws0, r, 'WATER TEMPERATURE DATA')
     r = add_row(ws0, r, 'Source', 'DART — Columbia Basin Research, University of Washington')
     r = add_row(ws0, r, 'URL', 'http://www.cbr.washington.edu/dart/query/river_graph_wmq')
-    r = add_row(ws0, r, 'Stations', 'FDRW (GC Forebay), GCGW (GC Tailrace), CHJ (CJ Forebay), CHQW (CJ Tailrace)')
+    r = add_row(ws0, r, 'Stations', 'FDRW (GC Forebay), GCGW (GC Tailrace), CHJ (CJ Forebay)')
     r = add_row(ws0, r, 'Period', f'{water_yr_range}, hourly resolution')
     r += 1
     r = sec_header(ws0, r, 'AIR TEMPERATURE DATA')
@@ -1030,9 +1025,9 @@ def export_excel(results):
     style_header(ws1)
     for _, row_data in summary_df.iterrows():
         ws1.append(list(row_data))
-        if row_data['Code'] == 'CHQW':
+        if row_data['Code'] == 'CHJ':
             for cell in ws1[ws1.max_row]:
-                cell.fill = CHQW_FILL
+                cell.fill = CHJ_FILL
     autofit(ws1)
 
     # ═════════════════════════════════════════════════════════════════════════
@@ -1045,9 +1040,9 @@ def export_excel(results):
     style_header(ws1m)
     for _, row_data in monthly_summary_df.iterrows():
         ws1m.append(list(row_data))
-        if row_data['Code'] == 'CHQW':
+        if row_data['Code'] == 'CHJ':
             for cell in ws1m[ws1m.max_row]:
-                cell.fill = CHQW_FILL
+                cell.fill = CHJ_FILL
     autofit(ws1m)
 
     # ═════════════════════════════════════════════════════════════════════════
@@ -1082,20 +1077,20 @@ def export_excel(results):
     autofit(ws2)
 
     # ═════════════════════════════════════════════════════════════════════════
-    # SHEET 5 — CHQW Annual (July, August, and Jul-Aug combined)
+    # SHEET 5 — CHJ Annual (July, August, and Jul-Aug combined)
     # ═════════════════════════════════════════════════════════════════════════
-    ann_chqw_jul = results['ann_chqw_jul']
-    ann_chqw_aug = results['ann_chqw_aug']
-    ws3 = wb.create_sheet('CHQW Annual')
+    ann_chj_jul = results['ann_chj_jul']
+    ann_chj_aug = results['ann_chj_aug']
+    ws3 = wb.create_sheet('CHJ Annual')
     ws3.append(['Year', 'Mean_Jul_Tw_C', 'Mean_Jul_Tw_F',
                 'Mean_Aug_Tw_C', 'Mean_Aug_Tw_F',
                 'Mean_JulAug_Tw_C', 'Mean_JulAug_Tw_F'])
     style_header(ws3)
-    all_yrs = sorted(set(ann_chqw.index) | set(ann_chqw_jul.index) | set(ann_chqw_aug.index))
+    all_yrs = sorted(set(ann_chj.index) | set(ann_chj_jul.index) | set(ann_chj_aug.index))
     for yr in all_yrs:
-        jul_val = ann_chqw_jul.get(yr, None)
-        aug_val = ann_chqw_aug.get(yr, None)
-        comb_val = ann_chqw.get(yr, None)
+        jul_val = ann_chj_jul.get(yr, None)
+        aug_val = ann_chj_aug.get(yr, None)
+        comb_val = ann_chj.get(yr, None)
         ws3.append([
             int(yr),
             round(jul_val, 3) if jul_val is not None else None,
@@ -1182,7 +1177,7 @@ def make_figures(results):
     tau_c, p_c  = results['tau_c'], results['p_c']
     sl_c, ic_c  = results['sl_c'], results['ic_c']
     ci_lo_c, ci_hi_c = results['ci_lo_c'], results['ci_hi_c']
-    # CHQW monthly
+    # CHJ monthly
     x_cj, y_cj  = results['x_cj'], results['y_cj']
     tau_cj, p_cj = results['tau_cj'], results['p_cj']
     sl_cj, ic_cj = results['sl_cj'], results['ic_cj']
@@ -1215,11 +1210,11 @@ def make_figures(results):
         return df[df['month'] == month].groupby('year')['wtc'].mean()
 
     # Shared data source footnote — built from actual loaded data ranges
-    chqw_yrs = stations['CHQW']['year']
+    chj_yrs = stations['CHJ']['year']
     air_yrs  = air['year']
     DATA_FOOTNOTE = (
         f'Water temperature: DART (Columbia Basin Research, Univ. of Washington) — '
-        f'CHQW station, hourly, {chqw_yrs.min()}–{chqw_yrs.max()}.  '
+        f'CHJ station, hourly, {chj_yrs.min()}–{chj_yrs.max()}.  '
         f'Air temperature: NOAA GHCND:USR0000WDOU (Douglas, WA), daily, {air_yrs.min()}–{air_yrs.max()}.  '
         f'Climate deltas: MACAv2-METDATA 20-model CMIP5 ensemble (RCP 4.5 / 8.5).'
     )
@@ -1228,7 +1223,7 @@ def make_figures(results):
         pass  # metadata footnote removed
 
     # Year colormap used by new figures
-    all_years = sorted(stations['CHQW']['year'].unique())
+    all_years = sorted(stations['CHJ']['year'].unique())
     yr_cmap = cm.coolwarm
     yr_norm = mcolors.Normalize(vmin=min(all_years), vmax=max(all_years))
 
@@ -1239,9 +1234,9 @@ def make_figures(results):
     # Determine the common year range across all stations
     all_min_yr = min(stations[s]['year'].min() for s in STATION_ORDER)
     all_max_yr = max(stations[s]['year'].max() for s in STATION_ORDER)
-    chqw_min_yr = stations['CHQW']['year'].min()
-    chqw_max_yr = stations['CHQW']['year'].max()
-    chqw_n_years = len(ann_summer(stations['CHQW']))
+    chj_min_yr = stations['CHJ']['year'].min()
+    chj_max_yr = stations['CHJ']['year'].max()
+    chj_n_years = len(ann_summer(stations['CHJ']))
     air_min_yr  = air['year'].min()
     air_max_yr  = air['year'].max()
 
@@ -1320,13 +1315,13 @@ def make_figures(results):
     print("    ✓ Fig2_Seasonal_Climatology.png")
 
     # ─────────────────────────────────────────────────────────────────────────
-    # FIGURE 3 — CHQW detailed trend: July and August separate + air temp
+    # FIGURE 3 — CHJ detailed trend: July and August separate + air temp
     # ─────────────────────────────────────────────────────────────────────────
     print("  Figure 3 …")
     fig = plt.figure(figsize=(18, 39))
     gs  = gridspec.GridSpec(5, 1, height_ratios=[3, 3, 3, 3, 2.5], hspace=0.30)
     fig.suptitle(
-        'Chief Joseph Dam Tailrace (CHQW) — July and August Temperature Trends\n'
+        'Chief Joseph Dam Forebay (CHJ) — July and August Temperature Trends\n'
         'Mann-Kendall Trend Test & Theil-Sen Slope Estimator',
         fontsize=20, fontweight='bold'
     )
@@ -1342,15 +1337,15 @@ def make_figures(results):
     boot_jw = np.array(boot_jw)
     ax_jw.fill_between(x_cj, np.percentile(boot_jw, 2.5, axis=0),
                        np.percentile(boot_jw, 97.5, axis=0),
-                       alpha=0.15, color=C['CHQW'], label='95% Bootstrap CI')
-    ax_jw.bar(x_cj, y_cj, width=0.65, color=C['CHQW'], alpha=0.45, zorder=2)
-    ax_jw.plot(x_cj, y_cj, 'o-', color=C['CHQW'], lw=1.8, ms=5, zorder=4,
+                       alpha=0.15, color=C['CHJ'], label='95% Bootstrap CI')
+    ax_jw.bar(x_cj, y_cj, width=0.65, color=C['CHJ'], alpha=0.45, zorder=2)
+    ax_jw.plot(x_cj, y_cj, 'o-', color=C['CHJ'], lw=1.8, ms=5, zorder=4,
                label='Annual July Water Temp')
     ax_jw.plot(x_cj, sl_cj * x_cj + ic_cj, '--', color=C['trend'], lw=2.2, zorder=5,
                label=f'Theil-Sen: {sl_cj:+.4f} °C/yr  ({sl_cj*10:+.3f} °C/decade)')
     ax_jw.set_ylabel('Water Temperature (°C)', fontsize=20)
     ax_jw.set_xlabel('Year', fontsize=20)
-    ax_jw.set_title('July Water Temperature Trend', fontsize=20, fontweight='bold', color=C['CHQW'])
+    ax_jw.set_title('July Water Temperature Trend', fontsize=20, fontweight='bold', color=C['CHJ'])
     mk_text_j = (f"MK: τ={tau_cj:.3f}, p={p_cj:.3f}\n"
                  f"{'★ Significant' if p_cj < 0.05 else 'Not significant'}")
     ax_jw.legend(loc='lower left', fontsize=16, frameon=True, edgecolor='#cccccc')
@@ -1434,16 +1429,16 @@ def make_figures(results):
     ax_air.legend(loc='lower left', fontsize=16, frameon=True, edgecolor='#cccccc')
 
     add_footnote(fig)
-    plt.savefig(f'{OUTPUT_DIR}/Fig3_CHQW_Trend_Detail.png', dpi=150, bbox_inches='tight')
+    plt.savefig(f'{OUTPUT_DIR}/Fig3_CHJ_Trend_Detail.png', dpi=150, bbox_inches='tight')
     plt.close()
-    print("    ✓ Fig3_CHQW_Trend_Detail.png")
+    print("    ✓ Fig3_CHJ_Trend_Detail.png")
 
     # ─────────────────────────────────────────────────────────────────────────
     # FIGURE 4 — Daily Jul–Aug water temperature, all years overlaid
     # ─────────────────────────────────────────────────────────────────────────
     print("  Figure 4 …")
-    chqw = stations['CHQW']
-    summer = chqw[chqw['month'].isin([7, 8])].copy()
+    chj = stations['CHJ']
+    summer = chj[chj['month'].isin([7, 8])].copy()
     summer['jul1'] = pd.to_datetime(summer['year'].astype(str) + '-07-01')
     summer['day_of_summer'] = (summer['datetime'] - summer['jul1']).dt.total_seconds() / 86400.0
 
@@ -1455,14 +1450,14 @@ def make_figures(results):
 
     overall_daily = summer.groupby(summer['day_of_summer'].astype(int))['wtc'].mean()
     ax.plot(overall_daily.index, overall_daily.values,
-            color='black', lw=3, alpha=0.9, zorder=5, label=f'{chqw_n_years}-Year Average Daily Cycle')
+            color='black', lw=3, alpha=0.9, zorder=5, label=f'{chj_n_years}-Year Average Daily Cycle')
 
     overall_mean = summer['wtc'].mean()
 
     ax.set_xlabel('Day of Summer', fontsize=20)
     ax.set_ylabel('Water Temperature (°C)', fontsize=20)
-    ax.set_title('Chief Joseph Dam Tailrace (CHQW) — Daily Mean Water Temperature\n'
-                 f'July–August, Every Year {chqw_min_yr}–{chqw_max_yr}', fontsize=20, fontweight='bold')
+    ax.set_title('Chief Joseph Dam Forebay (CHJ) — Daily Mean Water Temperature\n'
+                 f'July–August, Every Year {chj_min_yr}–{chj_max_yr}', fontsize=20, fontweight='bold')
     ax.set_xlim(-1, 62)
     ax.set_xticks([0, 10, 20, 31, 41, 51, 61])
     ax.set_xticklabels(['Jul 1', 'Jul 11', 'Jul 21', 'Aug 1', 'Aug 11', 'Aug 21', 'Aug 31'])
@@ -1509,8 +1504,8 @@ def make_figures(results):
                label=f'Estimated Minimum (μ = {popt_all[0]:.1f}°C)')
     ax.set_xlabel('Weekly Mean Air Temperature (°C)', fontsize=20, labelpad=12)
     ax.set_ylabel('Weekly Mean Water Temperature (°C)', fontsize=20)
-    ax.set_title('Mohseni Air–Water Temperature Regression — CHQW (CJD Tailrace)\n'
-                 f'Weekly Averages, {chqw_min_yr}–{chqw_max_yr}', fontsize=20, fontweight='bold')
+    ax.set_title('Mohseni Air–Water Temperature Regression — CHJ (CJD Forebay)\n'
+                 f'Weekly Averages, {chj_min_yr}–{chj_max_yr}', fontsize=20, fontweight='bold')
     ax.legend(loc='upper center', bbox_to_anchor=(0.5, -0.13), ncol=4,
               fontsize=16, frameon=True, edgecolor='#cccccc')
     plt.tight_layout(rect=[0, 0.07, 1, 1.0])
@@ -1544,7 +1539,7 @@ def make_figures(results):
     ax.set_xlabel('Mohseni Predicted Water Temperature (°C)', fontsize=20)
     ax.set_ylabel('Observed Water Temperature (°C)', fontsize=20)
     ax.set_title('Mohseni Model — Observed vs. Predicted Weekly Water Temperature\n'
-                 f'CHQW (CJD Tailrace), All Weeks {chqw_min_yr}–{chqw_max_yr}', fontsize=20, fontweight='bold')
+                 f'CHJ (CJD Forebay), All Weeks {chj_min_yr}–{chj_max_yr}', fontsize=20, fontweight='bold')
     stats_text = f'NSE = {NSE_all:.3f}    R² = {r2:.3f}'
     ax.text(0.03, 0.97, stats_text, transform=ax.transAxes, fontsize=16, va='top', ha='left',
             family='monospace', bbox=dict(boxstyle='round,pad=0.4', facecolor='#fdfefe',
@@ -1567,7 +1562,7 @@ def make_figures(results):
     fig, (ax_j, ax_a) = plt.subplots(1, 2, figsize=(24, 10.5), sharey=True)
     fig.suptitle(
         'Monthly Mean Water Temperature — Observed vs. Mohseni Predicted\n'
-        f'CHQW (CJD Tailrace), {chqw_min_yr}–{chqw_max_yr}',
+        f'CHJ (CJD Forebay), {chj_min_yr}–{chj_max_yr}',
         fontsize=20, fontweight='bold'
     )
 
@@ -1587,7 +1582,7 @@ def make_figures(results):
     ax_j.set_xlabel('Year', fontsize=20)
     ax_j.set_ylabel('Water Temperature (°C)', fontsize=20)
     ax_j.set_title('July', fontsize=20, fontweight='bold')
-    ax_j.set_xlim(chqw_min_yr - 1.5, chqw_max_yr + 1.5)
+    ax_j.set_xlim(chj_min_yr - 1.5, chj_max_yr + 1.5)
     ax_j.legend(loc='lower left', fontsize=16, frameon=True, edgecolor='#cccccc')
 
     # August (weeks ~31-35)
@@ -1605,7 +1600,7 @@ def make_figures(results):
               bbox=dict(boxstyle='round,pad=0.3', facecolor='#fdfefe', edgecolor='#bdc3c7', alpha=0.9))
     ax_a.set_xlabel('Year', fontsize=20)
     ax_a.set_title('August', fontsize=20, fontweight='bold')
-    ax_a.set_xlim(chqw_min_yr - 1.5, chqw_max_yr + 1.5)
+    ax_a.set_xlim(chj_min_yr - 1.5, chj_max_yr + 1.5)
     ax_a.legend(loc='lower left', fontsize=16, frameon=True, edgecolor='#cccccc')
 
     add_footnote(fig)
@@ -1632,8 +1627,8 @@ def make_figures(results):
                label=f'Estimated Minimum (μ = {popt_all[0]:.1f}°C)')
     ax.set_xlabel('Weekly Mean Air Temperature (°C)', fontsize=20)
     ax.set_ylabel('Weekly Mean Water Temperature (°C)', fontsize=20)
-    ax.set_title(f'Mohseni Air–Water Temperature Relationship — All {chqw_n_years} Years Overlaid\n'
-                 f'CHQW (CJD Tailrace), Weekly Averages {chqw_min_yr}–{chqw_max_yr}', fontsize=20, fontweight='bold')
+    ax.set_title(f'Mohseni Air–Water Temperature Relationship — All {chj_n_years} Years Overlaid\n'
+                 f'CHJ (CJD Forebay), Weekly Averages {chj_min_yr}–{chj_max_yr}', fontsize=20, fontweight='bold')
     sm = cm.ScalarMappable(cmap=yr_cmap, norm=yr_norm)
     sm.set_array([])
     cbar = plt.colorbar(sm, ax=ax, pad=0.01, fraction=0.03, aspect=30)
@@ -1683,7 +1678,7 @@ def make_figures(results):
         ax.set_xticklabels(scenario_labels_9, fontsize=16)
         ax.set_xlabel('Climate Scenario', fontsize=20)
         ax.set_ylabel('Projected Water Temperature (°C)', fontsize=20)
-        ax.set_title('Projected July and August Water Temperature at CJD Tailrace (CHQW)\n'
+        ax.set_title('Projected July and August Water Temperature at CJD Forebay (CHJ)\n'
                      'Mohseni (1998) Delta Method + CMIP5 Climate Scenarios (RCP 4.5 / 8.5)',
                      fontsize=20, fontweight='bold')
         all_vals = list(jul_df_9['Proj_Tw_C'].values) + list(aug_df_9['Proj_Tw_C'].values)
@@ -1731,7 +1726,7 @@ def make_figures(results):
         ax.set_xlabel('Air Temperature (°C)', fontsize=20)
         ax.set_ylabel('Water Temperature (°C)', fontsize=20)
         ax.set_title('Climate Projection Points on the Mohseni Air–Water Curve\n'
-                     'CHQW (CJD Tailrace) — July (○) and August (□) — CMIP5 RCP 4.5 / 8.5',
+                     'CHJ (CJD Forebay) — July (○) and August (□) — CMIP5 RCP 4.5 / 8.5',
                      fontsize=20, fontweight='bold')
         ax.set_xlim(15, 35); ax.set_ylim(15, 20)
         ax.legend(loc='lower right', fontsize=16, frameon=True, edgecolor='#cccccc', ncol=2)
@@ -1860,7 +1855,7 @@ def make_figures(results):
                 transform=ax.transAxes, fontsize=16, va='top', family='monospace',
                 bbox=dict(boxstyle='round,pad=0.4', facecolor='lightyellow', alpha=0.9))
 
-        ax.set_title('Projected Change in July and August Water Temperature at CJD Tailrace (CHQW)\n'
+        ax.set_title('Projected Change in July and August Water Temperature at CJD Forebay (CHJ)\n'
                      'Mohseni (1998) Delta Method + CMIP5 Climate Scenarios (RCP 4.5 / 8.5)',
                      fontsize=20, fontweight='bold')
         ax.legend(fontsize=20, loc='upper right')
@@ -1927,7 +1922,7 @@ def make_figures(results):
         ax.set_xlabel('Air Temperature (°C)', fontsize=20)
         ax.set_ylabel('Mohseni-Predicted Water Temperature (°C)', fontsize=20)
         ax.set_title('Mohseni Model Sensitivity Used for Monthly Climate Projections\n'
-                     'CHQW (CJD Tailrace) — Delta Method (RCP 4.5 / 8.5)',
+                     'CHJ (CJD Forebay) — Delta Method (RCP 4.5 / 8.5)',
                      fontsize=20, fontweight='bold')
         ax.legend(loc='lower right', fontsize=16)
         add_footnote(fig)
@@ -1940,7 +1935,7 @@ def make_figures(results):
     # FIGURE 14 — Observed week-by-week min/max/mean, July through August
     # ─────────────────────────────────────────────────────────────────────────
     print("  Figure 14 …")
-    chqw = stations['CHQW']
+    chj = stations['CHJ']
     week_stats_df = results.get('week_stats_df', None)
 
     if week_stats_df is not None and len(week_stats_df) > 0:
@@ -1973,7 +1968,7 @@ def make_figures(results):
         ax.set_xticklabels(week_labels, fontsize=16)
         ax.set_xlabel('Week', fontsize=20)
         ax.set_ylabel('Water Temperature (°C)', fontsize=20)
-        ax.set_title('Observed Weekly Water Temperature at CHQW — July through August (1997–2025)',
+        ax.set_title('Observed Weekly Water Temperature at CHJ — July through August (1997–2025)',
                      fontsize=20, fontweight='bold')
 
         # Legend
@@ -2072,7 +2067,7 @@ def make_figures(results):
         ax.set_xticklabels(week_labels, fontsize=16)
         ax.set_xlabel('Week', fontsize=20)
         ax.set_ylabel('Water Temperature (°C)', fontsize=20)
-        ax.set_title('Projected Weekly Water Temperature at CHQW — July through August\n'
+        ax.set_title('Projected Weekly Water Temperature at CHJ — July through August\n'
                      'Observed vs. 2080s RCP 8.5',
                      fontsize=20, fontweight='bold')
 
