@@ -2233,7 +2233,7 @@ def make_figures(results):
             bars1 = ax.bar(x - width/2, avg_df_proj['Proj_Tw_C'].values, width,
                           label='Average Day', color='#3498db', alpha=0.85, edgecolor='white', linewidth=1)
             bars2 = ax.bar(x + width/2, warm_df_proj['Proj_Tw_P90_C'].values, width,
-                          label='Warm Day (90th %ile)', color='#e74c3c', alpha=0.85, edgecolor='white', linewidth=1)
+                          label='Warm Day (90th %)', color='#e74c3c', alpha=0.85, edgecolor='white', linewidth=1)
 
             # Add value labels on bars
             for bars in [bars1, bars2]:
@@ -2261,22 +2261,9 @@ def make_figures(results):
             ax.set_xticklabels([s.replace('Baseline ', '').replace(' RCP ', '\n')
                                for s in avg_df_proj['Scenario'].values],
                               fontsize=13, fontweight='bold')
-            ax.legend(loc='upper left', fontsize=14, frameon=True, edgecolor='#cccccc', framealpha=0.95)
+            ax.legend(loc='lower left', fontsize=14, frameon=True, edgecolor='#cccccc', framealpha=0.95)
             ax.grid(axis='y', alpha=0.3)
             ax.tick_params(axis='both', labelsize=12)
-
-            # Add text box with delta information
-            textstr = 'Difference (Warm - Avg):\n'
-            for i, (_, avg_row) in enumerate(avg_df_proj.iterrows()):
-                warm_row = warm_df_proj.iloc[i]
-                delta = warm_row['Proj_Tw_P90_C'] - avg_row['Proj_Tw_C']
-                scenario_label = avg_row['Scenario'].replace('Baseline ', '').replace(' RCP ', ' ')
-                textstr += f'{scenario_label}: +{delta:.2f}°C\n'
-
-            props = dict(boxstyle='round,pad=0.6', facecolor='#fdfefe', edgecolor='#bdc3c7', alpha=0.92)
-            ax.text(0.98, 0.03, textstr.strip(), transform=ax.transAxes, fontsize=11,
-                   verticalalignment='bottom', horizontalalignment='right',
-                   bbox=props, family='monospace', fontweight='bold')
 
         fig.suptitle('Projected Water Temperature at CHJ (CJD Forebay)\n'
                      'Average Day vs Warm Day (10% Exceedance) Scenarios',
