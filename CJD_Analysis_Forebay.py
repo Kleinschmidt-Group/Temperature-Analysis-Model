@@ -47,6 +47,10 @@ METHODS
      Reference: Mohseni et al. (1998); Mantua et al. (2010); WACCIA Ch. 6
      Fit to all weekly air-water temperature pairs (2000–2025)
      Goodness-of-fit assessed via Nash-Sutcliffe Efficiency (NSE)
+     NOTE: All-weeks model (NSE ~0.48) used for projections. Jul-Aug only
+     model shows poor fit (NSE ~0.04), likely due to forebay thermal inertia
+     and reservoir operations. Delta method (applying modeled changes to
+     observed baselines) reduces bias from absolute prediction errors.
 
   4. Future climate projections via CMIP5 air temperature deltas
      Source:  MACAv2-METDATA (Abatzoglou & Brown 2012), 20 CMIP5 GCMs
@@ -704,11 +708,24 @@ def run_analysis(stations, air):
     print(f"\n  Mohseni Model Parameters — CHJ (All Weeks)")
     print(f"    μ = {popt_all[0]:.3f} °C,  α = {popt_all[1]:.3f} °C,"
           f"  γ = {popt_all[2]:.4f},  β = {popt_all[3]:.3f} °C")
-    print(f"    NSE = {NSE_all:.4f}  {'(Good ≥0.7)' if NSE_all >= 0.7 else '(Moderate)'}")
+    print(f"    NSE = {NSE_all:.4f}  {'(Good ≥0.7)' if NSE_all >= 0.7 else '(Moderate fit)'}")
     print(f"\n  Mohseni Model Parameters — CHJ (Jul–Aug Only)")
     print(f"    μ = {popt_jja[0]:.3f} °C,  α = {popt_jja[1]:.3f} °C,"
           f"  γ = {popt_jja[2]:.4f},  β = {popt_jja[3]:.3f} °C")
-    print(f"    NSE = {NSE_jja:.4f}")
+    print(f"    NSE = {NSE_jja:.4f}  {'(Poor fit - see note below)' if NSE_jja < 0.3 else '(Moderate fit)'}")
+
+    # Add model quality assessment and usage note
+    if NSE_jja < 0.3:
+        print(f"\n  ⚠ MODEL FIT QUALITY NOTE:")
+        print(f"    The Jul-Aug only model shows poor fit (NSE = {NSE_jja:.3f}).")
+        print(f"    This is likely due to:")
+        print(f"      • Forebay thermal inertia (Rufus Woods Lake buffering)")
+        print(f"      • Reservoir operations affecting summer water temps")
+        print(f"      • Reduced air-water coupling during warm months")
+        print(f"    ")
+        print(f"    PROJECTIONS USE: All-weeks model (NSE = {NSE_all:.3f}) for better stability.")
+        print(f"    Conservative delta method applies modeled CHANGES to observed baseline,")
+        print(f"    which reduces bias from poor absolute predictions.")
 
     # ── Trend analysis — all stations ────────────────────────────────────────
     print(f"\n  {'Station':<34} {'n':>4} {'Mean JA °C':>11} {'Slope °C/yr':>13}"
@@ -818,9 +835,15 @@ def run_analysis(stations, air):
     baseline_wt  = stations['CHJ'][stations['CHJ']['month'].isin(SUMMER_MONTHS)]['wtc'].mean()
 
     baseline_yr_label = f"{int(chj.year.min())}–{int(chj.year.max())}"
+    print(f"\n" + "=" * 76)
+    print(f"  CLIMATE PROJECTIONS — CHJ (Chief Joseph Dam Forebay)")
+    print(f"=" * 76)
     print(f"\n  Observed baseline ({baseline_yr_label}):")
     print(f"    Jul/Aug mean air temp  : {baseline_air:.2f} °C  ({baseline_air*9/5+32:.2f} °F)")
     print(f"    Jul/Aug mean water temp: {baseline_wt:.2f} °C  ({baseline_wt*9/5+32:.2f} °F)")
+    print(f"\n  Method: Delta approach using all-weeks Mohseni model (NSE={NSE_all:.3f})")
+    print(f"  Note: Projections represent best estimates; actual values may vary due to")
+    print(f"        reservoir operations, flow regime changes, and model limitations.")
     print(f"\n  {'Scenario':<24} {'ΔTair':>8} {'Proj.Air':>10} {'Proj.Tw':>10}"
           f" {'Proj.Tw(°F)':>12} {'ΔTw':>8}")
     print("  " + "-" * 76)
@@ -1097,12 +1120,15 @@ def export_excel(results):
     r = add_row(ws0, r, 'Trend detection', 'Mann-Kendall test (Hirsch et al. 1991; Helsel & Hirsch 2002)')
     r = add_row(ws0, r, 'Trend magnitude', 'Theil-Sen median slope with 95% CI (Helsel & Hirsch 2002)')
     r = add_row(ws0, r, 'Air-water model', 'Mohseni et al. (1998) nonlinear logistic regression')
-    r = add_row(ws0, r, 'Goodness of fit', 'Nash-Sutcliffe Efficiency (Nash & Sutcliffe 1970)')
+    r = add_row(ws0, r, 'Goodness of fit', f'Nash-Sutcliffe Efficiency: All-weeks NSE={NSE_all:.3f}, Jul-Aug NSE={NSE_jja:.3f}')
+    r = add_row(ws0, r, 'Model quality', 'All-weeks model used for projections; Jul-Aug model shows poor fit due to forebay thermal inertia')
     r += 1
     r = sec_header(ws0, r, 'CLIMATE PROJECTIONS')
     r = add_row(ws0, r, 'Source', 'MACAv2-METDATA (Abatzoglou & Brown 2012), 20 CMIP5 GCMs via Climate Toolbox')
     r = add_row(ws0, r, 'Scenarios', 'RCP 4.5 (moderate) and RCP 8.5 (high emissions); 2040s and 2080s horizons')
-    r = add_row(ws0, r, 'Note', f'Deltas referenced to 1970–1999 baseline; applied to {water_yr_range} observed baseline (conservative)')
+    r = add_row(ws0, r, 'Method', 'Delta approach: Mohseni changes applied to observed baselines (reduces bias)')
+    r = add_row(ws0, r, 'Uncertainty', 'Projections are best estimates; actual values may vary due to operations and model limitations')
+    r = add_row(ws0, r, 'Baseline', f'Deltas referenced to 1970–1999 baseline; applied to {water_yr_range} observed baseline (conservative)')
 
     # ═════════════════════════════════════════════════════════════════════════
     # SHEET 1 — Trend Summary (combined Jul-Aug, retained for reference)
@@ -1962,8 +1988,9 @@ def make_figures(results):
         # Add observed baselines as annotation
         jul_base = jul_df.loc[jul_df['Delta_Air_C'] == 0, 'Obs_Baseline_Tw_C'].values[0]
         aug_base = aug_df.loc[aug_df['Delta_Air_C'] == 0, 'Obs_Baseline_Tw_C'].values[0]
+        baseline_label_fig = f"{chj_min_yr}–{chj_max_yr}"
         ax.text(0.02, 0.97,
-                f'Observed Baselines (1997–2025):\n'
+                f'Observed Baselines ({baseline_label_fig}):\n'
                 f'  July:    {jul_base:.2f}°C  ({jul_base*9/5+32:.1f}°F)\n'
                 f'  August: {aug_base:.2f}°C  ({aug_base*9/5+32:.1f}°F)',
                 transform=ax.transAxes, fontsize=16, va='top', family='monospace',
@@ -2082,7 +2109,7 @@ def make_figures(results):
         ax.set_xticklabels(week_labels, fontsize=16)
         ax.set_xlabel('Week', fontsize=20)
         ax.set_ylabel('Water Temperature (°C)', fontsize=20)
-        ax.set_title('Observed Weekly Water Temperature at CHJ — July through August (1997–2025)',
+        ax.set_title(f'Observed Weekly Water Temperature at CHJ — July through August ({chj_min_yr}–{chj_max_yr})',
                      fontsize=20, fontweight='bold')
 
         # Legend
