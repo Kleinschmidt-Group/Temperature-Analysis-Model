@@ -61,21 +61,43 @@ METHODS
      the 1970-1999 historical baseline, applied to observed 2000-2025 air
      temperature at the Douglas County station.
 
+  5. Warm Day Scenario Analysis (10% Exceedance)
+     In addition to monthly average projections, warm day scenarios are
+     computed using the 90th percentile (10% exceedance) of daily air
+     temperatures for July and August. This represents conditions where
+     only 10% of days are warmer. Water temperature projections for these
+     warm days use the Mohseni model with 90th percentile air temperatures
+     plus climate deltas, applied to observed 90th percentile water temps.
+
 --------------------------------------------------------------------------------
 OUTPUTS
 --------------------------------------------------------------------------------
-  CJD_Temperature_Results.xlsx             — trend summary, projections, Mohseni params
-  Fig1_Annual_Summer_Trends.png            — annual Jul/Aug means, all stations
-  Fig2_Seasonal_Climatology.png            — mean annual temperature cycle
-  Fig3_CHJ_Trend_Detail.png                — CHJ detailed trend + air temp overlay
-  Fig4_JulAug_Daily_By_Year.png            — daily Jul/Aug temps, all years overlaid
-  Fig5_Mohseni_Regression.png              — Mohseni air-water regression by season
-  Fig6_Mohseni_Observed_vs_Predicted.png   — observed vs predicted weekly scatter
-  Fig7_JulAug_Obs_vs_Pred_TimeSeries.png   — Jul/Aug annual observed vs predicted
-  Fig8_Mohseni_All_Years_Overlaid.png      — all years overlaid on Mohseni curve
-  Fig9_Projected_Temps_Bar.png             — projected temps bar chart by scenario
-  Fig10_Projection_Points_Mohseni.png      — projection points on Mohseni curve
-  Fig11_Period_Comparison_Boxplots.png     — early vs. recent period comparison
+  Excel Workbook:
+    CJD_Temperature_Results.xlsx           — Multi-sheet workbook containing:
+      • Trend summaries (all stations, monthly)
+      • Monthly projections (average day)
+      • Warm Day projections (10% exceedance)
+      • CHJ annual temperature data
+      • Mohseni model parameters
+      • Weekly temperature statistics
+
+  Figures:
+    Fig1_Annual_Summer_Trends.png          — annual Jul/Aug means, all stations
+    Fig2_Seasonal_Climatology.png          — mean annual temperature cycle
+    Fig3_CHJ_Trend_Detail.png              — CHJ detailed trend + air temp overlay
+    Fig4_JulAug_Daily_By_Year.png          — daily Jul/Aug temps, all years overlaid
+    Fig5_Mohseni_Regression.png            — Mohseni air-water regression by season
+    Fig6_Mohseni_Observed_vs_Predicted.png — observed vs predicted weekly scatter
+    Fig7_JulAug_Obs_vs_Pred_TimeSeries.png — Jul/Aug annual observed vs predicted
+    Fig8_Mohseni_All_Years_Overlaid.png    — all years overlaid on Mohseni curve
+    Fig9_Projected_Temps_Bar.png           — projected temps bar chart by scenario
+    Fig10_Projection_Points_Mohseni.png    — projection points on Mohseni curve
+    Fig11_Period_Comparison_Boxplots.png   — early vs. recent period comparison
+    Fig12_Monthly_Projections_Bar.png      — monthly projections (July vs August)
+    Fig13_Monthly_Projection_Points.png    — monthly projections on Mohseni curve
+    Fig14_Observed_Weekly_MinMaxMean.png   — observed weekly temperature ranges
+    Fig15_Projected_Weekly_MinMaxMean.png  — projected weekly temperature ranges
+    Fig16_Average_vs_WarmDay_Comparison.png — average vs warm day (90th %ile) projections
 
 --------------------------------------------------------------------------------
 REFERENCES
@@ -863,6 +885,64 @@ def run_analysis(stations, air):
             })
         monthly_proj[month_name] = pd.DataFrame(m_rows)
 
+    # ── Warm Day Scenario (10% Exceedance) Projections ───────────────────────
+    # Calculate 90th percentile (10% exceedance) air temperatures for July and August
+    # This represents a "warm day" scenario where only 10% of days are warmer
+    print(f"\n{'='*76}")
+    print(f"  WARM DAY SCENARIO — 10% Exceedance (90th Percentile) Air Temperature")
+    print(f"{'='*76}")
+
+    warm_day_proj = {}
+    for month, month_name in [(7, 'July'), (8, 'August')]:
+        # Calculate 90th percentile of daily air temperatures for this month
+        air_month_daily = air[air['month'] == month]['tavg_c']
+        air_p90 = air_month_daily.quantile(0.90)
+
+        # Get corresponding water temperature using Mohseni model
+        # Use the observed water temperature statistics for warm days (90th percentile)
+        water_month_daily = stations['CHJ'][stations['CHJ']['month'] == month]['wtc']
+        water_p90_obs = water_month_daily.quantile(0.90)
+
+        # Calculate Mohseni prediction at 90th percentile air temp
+        water_p90_model = float(mohseni(air_p90, *popt_all))
+
+        print(f"\n  {month_name} Warm Day (90th percentile):")
+        print(f"    Air temp (10% exceed):   {air_p90:.2f} °C  ({air_p90*9/5+32:.2f} °F)")
+        print(f"    Observed water (90th):   {water_p90_obs:.2f} °C  ({water_p90_obs*9/5+32:.2f} °F)")
+        print(f"    Mohseni water (90th):    {water_p90_model:.2f} °C  ({water_p90_model*9/5+32:.2f} °F)")
+
+        print(f"\n  {month_name} Warm Day Projections:")
+        print(f"  {'Scenario':<24} {'ΔTair':>8} {'Proj.Air':>10} {'Proj.Tw':>10}"
+              f" {'Proj.Tw(°F)':>12} {'ΔTw':>8}")
+        print("  " + "-" * 76)
+
+        wd_rows = []
+        for label, delta, color in climate_scenarios:
+            proj_air_wd = air_p90 + delta
+            # Use Mohseni delta method: calculate change from baseline warm day
+            mohseni_dtw_wd = float(mohseni(proj_air_wd, *popt_all)) - water_p90_model
+            # Apply delta to OBSERVED 90th percentile water temp
+            proj_tw_wd = water_p90_obs + mohseni_dtw_wd
+
+            print(f"  {label:<24} {delta:>+8.2f} {proj_air_wd:>10.2f} {proj_tw_wd:>10.2f}"
+                  f" {proj_tw_wd*9/5+32:>12.2f} {mohseni_dtw_wd:>+8.2f}")
+
+            wd_rows.append({
+                'Scenario': label, 'Month': month_name,
+                'Delta_Air_C': round(delta, 2),
+                'Baseline_Air_P90_C': round(air_p90, 2),
+                'Proj_Air_P90_C': round(proj_air_wd, 2),
+                'Obs_Baseline_Tw_P90_C': round(water_p90_obs, 2),
+                'Proj_Tw_P90_C': round(proj_tw_wd, 2),
+                'Proj_Tw_P90_F': round(proj_tw_wd * 9/5 + 32, 2),
+                'Delta_Tw_C': round(mohseni_dtw_wd, 2),
+                'Delta_Tw_F': round(mohseni_dtw_wd * 9/5, 2),
+                'Color': color,
+            })
+        warm_day_proj[month_name] = pd.DataFrame(wd_rows)
+
+    print(f"{'='*76}\n")
+
     # ── Week-by-week water temperature stats for July and August (CHJ) ────
     chj_summer = stations['CHJ'][stations['CHJ']['month'].isin([7, 8])].copy()
     weekly_by_yr = chj_summer.groupby(['year', 'week', 'month'])['wtc'].mean().reset_index()
@@ -913,6 +993,7 @@ def run_analysis(stations, air):
         jja_mask=jja_mask,
         climate_scenarios=climate_scenarios,
         monthly_proj=monthly_proj,
+        warm_day_proj=warm_day_proj,
         week_stats_df=week_stats_df,
     )
     return results
@@ -1077,6 +1158,26 @@ def export_excel(results):
                            row['Proj_Tw_C'], row['Proj_Tw_F'],
                            row['Delta_Tw_C'], row['Delta_Tw_F']])
         autofit(ws5)
+
+    # ═════════════════════════════════════════════════════════════════════════
+    # SHEET 3b — Warm Day Projections (10% Exceedance / 90th Percentile)
+    # ═════════════════════════════════════════════════════════════════════════
+    warm_day_proj = results.get('warm_day_proj', {})
+    if warm_day_proj:
+        ws_wd = wb.create_sheet('Warm Day Projections (P90)')
+        ws_wd.append(['Month', 'Scenario', 'Baseline_Air_P90_C', 'Delta_Air_C',
+                      'Proj_Air_P90_C', 'Obs_Baseline_Tw_P90_C', 'Proj_Tw_P90_C', 'Proj_Tw_P90_F',
+                      'Delta_Tw_C', 'Delta_Tw_F'])
+        style_header(ws_wd)
+        for month_name in ['July', 'August']:
+            wdf = warm_day_proj[month_name]
+            for _, row in wdf.iterrows():
+                ws_wd.append([month_name, row['Scenario'],
+                             row['Baseline_Air_P90_C'], row['Delta_Air_C'],
+                             row['Proj_Air_P90_C'], row['Obs_Baseline_Tw_P90_C'],
+                             row['Proj_Tw_P90_C'], row['Proj_Tw_P90_F'],
+                             row['Delta_Tw_C'], row['Delta_Tw_F']])
+        autofit(ws_wd)
 
     # ═════════════════════════════════════════════════════════════════════════
     # SHEET 4 — Projections (combined Jul-Aug, retained for reference)
@@ -2101,6 +2202,91 @@ def make_figures(results):
         plt.close()
         print("    ✓ Fig15_Projected_Weekly_MinMaxMean.png")
 
+    # ─────────────────────────────────────────────────────────────────────────
+    # FIGURE 16 — Average Day vs Warm Day Projections Comparison
+    # ─────────────────────────────────────────────────────────────────────────
+    warm_day_proj = results.get('warm_day_proj', {})
+    if warm_day_proj and monthly_proj:
+        print("  Figure 16 …")
+        fig, axes = plt.subplots(1, 2, figsize=(24, 10.5))
+
+        for idx, month_name in enumerate(['July', 'August']):
+            ax = axes[idx]
+
+            # Get data
+            avg_df = monthly_proj[month_name]
+            warm_df = warm_day_proj[month_name]
+
+            # Filter out baseline scenarios for clarity
+            avg_df_proj = avg_df[avg_df['Delta_Air_C'] > 0]
+            warm_df_proj = warm_df[warm_df['Delta_Air_C'] > 0]
+
+            if len(avg_df_proj) == 0:
+                continue
+
+            # X positions
+            n_scenarios = len(avg_df_proj)
+            x = np.arange(n_scenarios)
+            width = 0.35
+
+            # Plot bars
+            bars1 = ax.bar(x - width/2, avg_df_proj['Proj_Tw_C'].values, width,
+                          label='Average Day', color='#3498db', alpha=0.85, edgecolor='white', linewidth=1)
+            bars2 = ax.bar(x + width/2, warm_df_proj['Proj_Tw_P90_C'].values, width,
+                          label='Warm Day (90th %ile)', color='#e74c3c', alpha=0.85, edgecolor='white', linewidth=1)
+
+            # Add value labels on bars
+            for bars in [bars1, bars2]:
+                for bar in bars:
+                    height = bar.get_height()
+                    ax.text(bar.get_x() + bar.get_width()/2., height,
+                           f'{height:.1f}°C\n({height*9/5+32:.1f}°F)',
+                           ha='center', va='bottom', fontsize=10, fontweight='bold')
+
+            # Add baseline reference lines
+            baseline_avg = avg_df[avg_df['Delta_Air_C'] == 0]['Proj_Tw_C'].values[0]
+            baseline_warm = warm_df[warm_df['Delta_Air_C'] == 0]['Proj_Tw_P90_C'].values[0]
+
+            ax.axhline(baseline_avg, color='#3498db', linestyle='--', linewidth=1.5, alpha=0.5,
+                      label=f'Baseline Avg: {baseline_avg:.1f}°C')
+            ax.axhline(baseline_warm, color='#e74c3c', linestyle='--', linewidth=1.5, alpha=0.5,
+                      label=f'Baseline Warm: {baseline_warm:.1f}°C')
+
+            # Formatting
+            ax.set_xlabel('Climate Scenario', fontsize=18, fontweight='bold')
+            ax.set_ylabel('Water Temperature (°C)', fontsize=18, fontweight='bold')
+            ax.set_title(f'{month_name} Projections — Average vs Warm Day',
+                        fontsize=20, fontweight='bold', pad=15)
+            ax.set_xticks(x)
+            ax.set_xticklabels([s.replace('Baseline ', '').replace(' RCP ', '\n')
+                               for s in avg_df_proj['Scenario'].values],
+                              fontsize=13, fontweight='bold')
+            ax.legend(loc='upper left', fontsize=14, frameon=True, edgecolor='#cccccc', framealpha=0.95)
+            ax.grid(axis='y', alpha=0.3)
+            ax.tick_params(axis='both', labelsize=12)
+
+            # Add text box with delta information
+            textstr = 'Difference (Warm - Avg):\n'
+            for i, (_, avg_row) in enumerate(avg_df_proj.iterrows()):
+                warm_row = warm_df_proj.iloc[i]
+                delta = warm_row['Proj_Tw_P90_C'] - avg_row['Proj_Tw_C']
+                scenario_label = avg_row['Scenario'].replace('Baseline ', '').replace(' RCP ', ' ')
+                textstr += f'{scenario_label}: +{delta:.2f}°C\n'
+
+            props = dict(boxstyle='round,pad=0.6', facecolor='#fdfefe', edgecolor='#bdc3c7', alpha=0.92)
+            ax.text(0.98, 0.03, textstr.strip(), transform=ax.transAxes, fontsize=11,
+                   verticalalignment='bottom', horizontalalignment='right',
+                   bbox=props, family='monospace', fontweight='bold')
+
+        fig.suptitle('Projected Water Temperature at CHJ (CJD Forebay)\n'
+                     'Average Day vs Warm Day (10% Exceedance) Scenarios',
+                     fontsize=22, fontweight='bold', y=0.98)
+
+        plt.tight_layout(rect=[0, 0.0, 1, 0.96])
+        plt.savefig(f'{OUTPUT_DIR}/Fig16_Average_vs_WarmDay_Comparison.png', dpi=150, bbox_inches='tight')
+        plt.close()
+        print("    ✓ Fig16_Average_vs_WarmDay_Comparison.png")
+
     print(f"\n  All figures saved to {OUTPUT_DIR}")
 
 
@@ -2110,7 +2296,7 @@ def make_figures(results):
 
 if __name__ == '__main__':
     print("=" * 70)
-    print("CJD Tailrace Water Temperature — Full Analysis")
+    print("CJD Forebay Water Temperature — Full Analysis")
     print("=" * 70)
 
     # ── Load data ─────────────────────────────────────────────────────────────
