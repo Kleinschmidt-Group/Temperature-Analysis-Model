@@ -1,10 +1,6 @@
-================================================================================
-CJD_Analysis_Test.py — README
-================================================================================
 Chief Joseph Dam Tailrace Water Temperature Analysis
 Historical Trend Analysis & Future Climate Projections
-Kleinschmidt Associates | 2025
-================================================================================
+Kleinschmidt Associates | 2026
 
 
 PURPOSE
