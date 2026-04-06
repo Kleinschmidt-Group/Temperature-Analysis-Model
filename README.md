@@ -1,10 +1,9 @@
-================================================================================
+
 Chief Joseph Dam Water Temperature Analysis — README
-================================================================================
+
 Historical Trend Analysis & Future Climate Projections
 Complete Analysis Package: Forebay & Tailrace
 Kleinschmidt Associates | 2025
-================================================================================
 
 
 OVERVIEW
