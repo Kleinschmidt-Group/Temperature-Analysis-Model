@@ -1,19 +1,43 @@
-Chief Joseph Dam Tailrace Water Temperature Analysis
+================================================================================
+Chief Joseph Dam Water Temperature Analysis — README
+================================================================================
 Historical Trend Analysis & Future Climate Projections
-Kleinschmidt Associates | 2026
+Complete Analysis Package: Forebay & Tailrace
+Kleinschmidt Associates | 2025
+================================================================================
 
 
-PURPOSE
--------
-This script performs a complete statistical analysis of July–August water
-temperatures at the Chief Joseph Dam (CJD) tailrace on the Columbia River.
-It answers two questions:
+OVERVIEW
+--------
+This package contains two complementary water temperature analysis scripts
+for the Chief Joseph Dam (CJD) system on the Columbia River:
+
+  1. CJD_Analysis_Forebay.py    — Primary station: CHJ (Forebay)
+                                   Analysis period: 2000–2025
+                                   Includes: Warm Day Scenario Analysis (10% exceedance)
+                                   Outputs: 16 figures + comprehensive results workbook
+
+  2. CJD_Analysis_Tailrace.py   — Primary station: CHQW (Tailrace)
+                                   Analysis period: 1997–2025
+                                   Outputs: 15 figures + comprehensive results workbook
+
+Both scripts answer the same core questions:
 
   1. Have summer water temperatures changed over the historical record?
   2. How much could they change in the future under climate warming scenarios?
 
-The analysis produces a formatted Excel workbook of results and 15
-publication-quality figures.
+Each analysis produces a formatted Excel workbook of results and publication-
+quality figures.
+
+
+WHICH SCRIPT TO USE?
+--------------------
+  FOREBAY Analysis   — Run: python CJD_Analysis_Forebay.py
+  TAILRACE Analysis  — Run: python CJD_Analysis_Tailrace.py
+
+  Use both for a complete system characterization. The Forebay script
+  includes additional warm-day scenario analysis (10% exceedance) that
+  represents more extreme conditions.
 
 
 REQUIREMENTS
@@ -33,15 +57,18 @@ Install with:
 
 INPUT DATA
 ----------
-The script expects five required input files plus two optional MACA climate
-files. File paths are set in the CONFIGURATION section at the top of
-CJD_Analysis_Test.py (lines ~139–173). Update these paths if data is moved.
+Both scripts use the same five required input files plus two optional MACA
+climate files. File paths are set in the CONFIGURATION section at the top of
+each script (lines ~139–269). Update these paths if data is moved.
+
+  Forebay script paths:   CJD_Analysis_Forebay.py lines ~160-200
+  Tailrace script paths:  CJD_Analysis_Tailrace.py lines ~133-166
 
 Water temperature data (4 Excel files, one per station):
   FDRW_Hourly_Data_1995_2025.xlsx  — Grand Coulee Dam Forebay
   GCGW_Hourly_Data_1995_2025.xlsx  — Grand Coulee Dam Tailrace
-  CHJ_Hourly_Data_1995_2025.xlsx   — Chief Joseph Dam Forebay
-  CHQW_Hourly_Data_1995_2025.xlsx  — Chief Joseph Dam Tailrace (primary)
+  CHJ_Hourly_Data_1995_2025.xlsx   — Chief Joseph Dam Forebay (primary for Forebay script)
+  CHQW_Hourly_Data_1995_2025.xlsx  — Chief Joseph Dam Tailrace (primary for Tailrace script)
 
   Source:  DART (Data Access in Real Time)
            Columbia Basin Research, University of Washington
@@ -49,8 +76,9 @@ Water temperature data (4 Excel files, one per station):
   Format:  Multi-sheet Excel workbook (one sheet per year)
            Columns: Pacific Timestamp, Temperature (C), Temperature (F),
                     Outflow (kcfs)
-  Period:  CHQW: 1997–2025 (after QA/QC removes 1995–1996 null values)
-           FDRW, GCGW, CHJ: 2000–2025
+  Period:  Forebay:  CHJ 2000–2025; CHQW, FDRW, GCGW 2000–2025
+           Tailrace: CHQW 1997–2025 (after QA/QC removes 1995–1996 null values)
+                     FDRW, GCGW, CHJ 2000–2025
 
 Air temperature data (1 CSV file):
   Douglas_Temp_1995_2025.csv
@@ -76,6 +104,11 @@ MACAv2-METDATA climate files (2 CSV files -- optional):
 
 HOW TO RUN
 ----------
+Both scripts follow the same workflow. Run each separately for Forebay and
+Tailrace analyses.
+
+For each script:
+
 1. Verify that all required input data files are in place and that the file
    paths in the CONFIGURATION section point to them.
 
@@ -84,99 +117,119 @@ HOW TO RUN
 
 3. Run from the command line:
 
-     python CJD_Analysis_Test.py
+     # For Forebay analysis:
+     python CJD_Analysis_Forebay.py
+
+     # For Tailrace analysis:
+     python CJD_Analysis_Tailrace.py
 
 4. The script prints progress to the console and saves all outputs to
    OUTPUT_DIR.
 
-Expected runtime: under 5 minutes on a standard workstation.
+Expected runtime: under 5 minutes per script on a standard workstation.
 
 
 OUTPUTS
 -------
-All outputs are saved to the folder specified by OUTPUT_DIR.
+Both scripts save outputs to the folder specified by OUTPUT_DIR. The Excel
+workbook and figure names are identical between scripts; results differ only
+in data (primary station, analysis period, and warm-day scenarios in Forebay).
 
-Excel workbook:
+Excel Workbook (both scripts):
   CJD_Temperature_Results.xlsx
-    Sheet 1: Data Sources & Methods     -- full documentation of inputs and methods
-    Sheet 2: Trend Summary (Jul-Aug)    -- combined July-August Mann-Kendall and
+    Sheet 1: Data Sources & Methods     — full documentation of inputs and methods
+    Sheet 2: Trend Summary (Jul-Aug)    — combined July-August Mann-Kendall and
                                            Theil-Sen results for all stations
-    Sheet 3: Trend Summary (Monthly)    -- same results split by July and August
+    Sheet 3: Trend Summary (Monthly)    — same results split by July and August
                                            separately for all stations
-    Sheet 4: Monthly Projections        -- projected water temperatures for July
+    Sheet 4: Monthly Projections        — projected water temperatures for July
                                            and August separately under each
                                            climate scenario
-    Sheet 5: Projections (Jul-Aug)      -- combined Jul-Aug projections (retained
+    Sheet 5: Projections (Jul-Aug)      — combined Jul-Aug projections (retained
                                            for reference)
-    Sheet 6: CHQW Annual                -- year-by-year July mean, August mean,
+    Sheet 6: Primary Station Annual     — year-by-year July mean, August mean,
                                            and combined July-August mean water
-                                           temperatures at CHQW
-    Sheet 7: Mohseni Parameters         -- fitted model parameters (mu, alpha,
+                                           temperatures at primary station:
+                                             Forebay:  CHJ annual data
+                                             Tailrace: CHQW annual data
+    Sheet 7: Mohseni Parameters         — fitted model parameters (mu, alpha,
                                            gamma, beta) and NSE for all-weeks
                                            and Jul-Aug-only fits
-    Sheet 8: Weekly Stats               -- observed and projected week-by-week
+    Sheet 8: Weekly Stats               — observed and projected week-by-week
                                            mean, min, and max temperatures at
-                                           CHQW for July and August
+                                           primary station for July and August
+    Sheet 9 (Forebay only): Warm Day Projections — 10% exceedance day projections
+                                           and Mohseni model parameters for
+                                           warm day scenarios
 
 Figures (PNG, 150 dpi):
-  Fig1_Annual_Summer_Trends.png         -- annual July and August mean water
+
+  COMMON FIGURES (both scripts):
+  ────────────────────────────────────────────────────────────────────────────
+  Fig1_Annual_Summer_Trends.png         — annual July and August mean water
                                            temperature at all four stations,
                                            split by month with Theil-Sen trends
                                            (4-row x 2-column panel layout)
-  Fig2_Seasonal_Climatology.png         -- mean annual temperature cycle (7-day
+  Fig2_Seasonal_Climatology.png         — mean annual temperature cycle (7-day
                                            rolling average) for all stations and air
-  Fig3_CHQW_Trend_Detail.png            -- 5-panel figure: July water trend,
-                                           August water trend, July observed vs.
-                                           Mohseni predicted, August observed vs.
-                                           Mohseni predicted, and air temperature
-                                           trend (both months), all with bootstrap
-                                           95% confidence bands
-  Fig4_JulAug_Daily_By_Year.png         -- daily July-August water temperatures
-                                           at CHQW, all years overlaid and
-                                           colored by year, with multi-year
+  Fig3_*_Trend_Detail.png               — 5-panel figure showing primary station
+                                           (CHJ for Forebay, CHQW for Tailrace)
+                                           detailed trend + air temp overlay,
+                                           all with bootstrap 95% confidence bands
+  Fig4_JulAug_Daily_By_Year.png         — daily July-August water temperatures
+                                           at primary station, all years overlaid
+                                           and colored by year, with multi-year
                                            average daily cycle
-  Fig5_Mohseni_Regression.png           -- weekly air vs. water temperature
+  Fig5_Mohseni_Regression.png           — weekly air vs. water temperature
                                            scatter colored by season, with
                                            fitted Mohseni S-curves (all weeks
                                            and Jul-Aug only)
-  Fig6_Mohseni_Observed_vs_Predicted.png -- observed vs. Mohseni-predicted
+  Fig6_Mohseni_Observed_vs_Predicted.png — observed vs. Mohseni-predicted
                                            weekly water temperature scatter,
                                            colored by year, with NSE and R-squared
-  Fig7_JulAug_Obs_vs_Pred_TimeSeries.png -- July and August annual observed vs.
+  Fig7_JulAug_Obs_vs_Pred_TimeSeries.png — July and August annual observed vs.
                                            Mohseni-predicted means side by side,
                                            with mean absolute error (MAE)
-  Fig8_Mohseni_All_Years_Overlaid.png   -- all years of weekly air-water data
+  Fig8_Mohseni_All_Years_Overlaid.png   — all years of weekly air-water data
                                            overlaid on the fitted Mohseni S-curve,
                                            colored by year
-  Fig9_Projected_Temps_Bar.png          -- projected July and August water
+  Fig9_Projected_Temps_Bar.png          — projected July and August water
                                            temperatures under each climate
                                            scenario, bar chart with deg C and
                                            deg F labels
-  Fig10_Projection_Points_Mohseni.png   -- climate projection points (July and
+  Fig10_Projection_Points_Mohseni.png   — climate projection points (July and
                                            August) plotted on the Mohseni
                                            S-curve for all scenarios
-  Fig11_Period_Comparison_Boxplots.png  -- monthly boxplot distributions comparing
+  Fig11_Period_Comparison_Boxplots.png  — monthly boxplot distributions comparing
                                            early vs. recent periods at all four
                                            stations, with Mann-Whitney p-values
                                            for July and August
-  Fig12_Monthly_Projections_Bar.png     -- projected change (delta-Tw) in July
+  Fig12_Monthly_Projections_Bar.png     — projected change (delta-Tw) in July
                                            and August water temperature by
                                            climate scenario, with observed
                                            baselines annotated
-  Fig13_Monthly_Projection_Points.png   -- Mohseni model sensitivity diagram
+  Fig13_Monthly_Projection_Points.png   — Mohseni model sensitivity diagram
                                            showing delta arrows from baseline
                                            to 2080s RCP 8.5 for July and August
-  Fig14_Observed_Weekly_MinMaxMean.png  -- observed week-by-week mean, min, and
-                                           max water temperatures at CHQW for
-                                           July through August (ISO weeks)
-  Fig15_Projected_Weekly_MinMaxMean.png -- observed vs. projected week-by-week
+  Fig14_Observed_Weekly_MinMaxMean.png  — observed week-by-week mean, min, and
+                                           max water temperatures at primary
+                                           station for July through August
+  Fig15_Projected_Weekly_MinMaxMean.png — observed vs. projected week-by-week
                                            water temperatures under the most
                                            extreme scenario (2080s RCP 8.5)
+
+  FOREBAY-ONLY FIGURE:
+  ────────────────────────────────────────────────────────────────────────────
+  Fig16_Average_vs_WarmDay_Comparison.png — comparison of average day vs. warm
+                                           day (90th percentile exceedance)
+                                           temperature projections under all
+                                           climate scenarios
 
 
 ANALYSIS OVERVIEW
 -----------------
-The script executes four analytical steps:
+Both scripts execute the same core analytical steps with slight variations
+noted below.
 
 Step 1 -- QA/QC and Data Loading
   All water temperature and air temperature records are screened by the
@@ -205,7 +258,7 @@ Step 2 -- Annual Summer Averages and Trend Analysis
 
 Step 3 -- Mohseni Air-Water Temperature Model
   Fits the Mohseni et al. (1998) nonlinear logistic regression to weekly
-  air-water temperature pairs at CHQW:
+  air-water temperature pairs:
 
     Tw = mu + (alpha - mu) / (1 + exp(gamma * (beta - Ta)))
 
@@ -219,6 +272,12 @@ Step 3 -- Mohseni Air-Water Temperature Model
   July-August weeks (ISO weeks 26-35). Model fit is evaluated using
   Nash-Sutcliffe Efficiency (NSE; Nash & Sutcliffe 1970).
   Reference: Mohseni et al. (1998); Mantua et al. (2010)
+
+  NOTE (Forebay only): The Jul-Aug only model shows poor fit (NSE ~0.04),
+  likely due to forebay thermal inertia and reservoir operations. The
+  all-weeks model (NSE ~0.48) is used for projections. The delta method
+  (applying modeled changes to observed baselines) reduces bias from
+  absolute prediction errors.
 
 Step 4 -- Future Climate Projections
   Applies CMIP5 air temperature warming deltas to the fitted Mohseni model
@@ -242,48 +301,64 @@ Step 4 -- Future Climate Projections
 
   Reference: Abatzoglou & Brown (2012); Mantua et al. (2010)
 
+Step 5 -- Warm Day Scenario Analysis (Forebay only)
+  In addition to monthly average projections, the Forebay script computes
+  warm day scenarios using the 90th percentile (10% exceedance) of daily air
+  temperatures for July and August. This represents conditions where only 10%
+  of days are warmer. Water temperature projections for these warm days use
+  the Mohseni model with 90th percentile air temperatures plus climate deltas,
+  applied to observed 90th percentile water temperatures.
+
 
 CODE STRUCTURE
 --------------
-Line     Section
-------   ------------------------------------------
-1-111    Header documentation and references
-113-129  Imports
-131-269  Configuration (file paths, MACA delta computation, station labels,
-           climate scenarios, color palette)
-271-292  Matplotlib style settings
-294-371  Section 1: Statistical helper functions
-           mann_kendall()  -- trend test
-           theil_sen()     -- slope estimator
-           mohseni()       -- air-water model equation
-           fit_mohseni()   -- curve fitting + NSE
-374-~500 Section 1B: QA/QC (TemperatureQAQC class)
-           check_physical_bounds()    -- monthly plausibility bounds
-           detect_outliers_iqr()      -- IQR-based outlier flagging
-           detect_constant_spans()    -- sensor failure detection
-           detect_impossible_jumps()  -- hourly jump screening
-           detect_data_gaps()         -- gap identification
-~500+    Section 2: Data loading
-           load_station()  -- reads multi-sheet water temp Excel files,
-                              applies QA/QC, returns cleaned DataFrame
-           load_air()      -- reads NOAA daily air temp CSV, applies QA/QC,
-                              converts deg F to deg C
-~650+    Section 3: Analysis
-           run_analysis()  -- computes annual means by month and combined,
-                              fits Mohseni model (all weeks and Jul-Aug only),
-                              runs trend tests for all stations and months,
-                              generates monthly projections and week-by-week
-                              temperature statistics
-~920+    Section 4: Excel export
-           export_excel()  -- creates formatted 8-sheet workbook
-~1164+   Section 5: Figures
-           make_figures()  -- generates 15 publication-quality PNG figures
-~2099+   Section 6: Main entry point
+Both scripts follow the same organizational structure. Line numbers may vary
+slightly between scripts, but the sections are identical in purpose:
+
+Approximate Line Ranges:
+  1-120    Header documentation and references
+  121-145  Imports
+  150-270  Configuration (file paths, MACA delta computation, station labels,
+             climate scenarios, color palette)
+  280-310  Matplotlib style settings
+  320-400  Section 1: Statistical helper functions
+             mann_kendall()  -- trend test
+             theil_sen()     -- slope estimator
+             mohseni()       -- air-water model equation
+             fit_mohseni()   -- curve fitting + NSE
+  410-550  Section 1B: QA/QC (TemperatureQAQC class)
+             check_physical_bounds()    -- monthly plausibility bounds
+             detect_outliers_iqr()      -- IQR-based outlier flagging
+             detect_constant_spans()    -- sensor failure detection
+             detect_impossible_jumps()  -- hourly jump screening
+             detect_data_gaps()         -- gap identification
+  560+     Section 2: Data loading
+             load_station()  -- reads multi-sheet water temp Excel files,
+                                applies QA/QC, returns cleaned DataFrame
+             load_air()      -- reads NOAA daily air temp CSV, applies QA/QC,
+                                converts deg F to deg C
+  700+     Section 3: Analysis
+             run_analysis()  -- computes annual means by month and combined,
+                                fits Mohseni model (all weeks and Jul-Aug only),
+                                runs trend tests for all stations and months,
+                                generates monthly projections and week-by-week
+                                temperature statistics
+  1000+    Section 4: Excel export
+             export_excel()  -- creates formatted 8-9 sheet workbook
+  1300+    Section 5: Figures
+             make_figures()  -- generates 15-16 publication-quality PNG figures
+  2200+    Section 6: Main entry point
 
 
 CONFIGURATION
 -------------
-To modify the analysis, edit the CONFIGURATION section (~lines 131-269):
+To customize either analysis, edit the CONFIGURATION section at the top of
+the respective script:
+
+  CJD_Analysis_Forebay.py  — Forebay-specific configuration (~lines 160–200)
+  CJD_Analysis_Tailrace.py — Tailrace-specific configuration (~lines 133–166)
+
+Common configuration variables in both scripts:
 
   OUTPUT_DIR        -- where results are saved
   STATION_FILES     -- paths to the four water temperature Excel files
@@ -294,6 +369,9 @@ To modify the analysis, edit the CONFIGURATION section (~lines 131-269):
   STATION_ORDER     -- order stations appear in figures
   CLIMATE_SCENARIOS -- warming increments and scenario labels; auto-populated
                        from MACA files if present, otherwise pre-computed
+
+Each script can be configured independently to output results to different
+directories or use different file paths.
 
 
 REFERENCES
@@ -332,4 +410,5 @@ Washington Climate Change Impacts Assessment (WACCIA), Chapter 6 -- Salmon.
   Mantua et al. (contributing authors).
 
 ================================================================================
+
 
