@@ -877,23 +877,27 @@ def run_analysis(stations, air):
     monthly_proj = {}
     for month, month_name in [(7, 'July'), (8, 'August')]:
         m_air_baseline = air[air['month'] == month]['tavg_c'].mean()
-        m_wt_baseline  = stations['CHJ'][(stations['CHJ']['month'] == month)]['wtc'].mean()
+        chj_month      = stations['CHJ'][stations['CHJ']['month'] == month]['wtc']
+        m_wt_baseline  = chj_month.mean()
+        m_wt_max       = chj_month.max()
         m_tw_model     = float(mohseni(m_air_baseline, *popt_all))
 
         m_rows = []
         print(f"\n  {month_name}-only projections (baseline air = {m_air_baseline:.2f} °C, "
-              f"obs water = {m_wt_baseline:.2f} °C, model water = {m_tw_model:.2f} °C):")
+              f"obs water = {m_wt_baseline:.2f} °C, obs max = {m_wt_max:.2f} °C, "
+              f"model water = {m_tw_model:.2f} °C):")
         print(f"  {'Scenario':<24} {'ΔTair':>8} {'Proj.Air':>10} {'Proj.Tw':>10}"
-              f" {'Proj.Tw(°F)':>12} {'ΔTw':>8}")
-        print("  " + "-" * 76)
+              f" {'Proj.Tw(°F)':>12} {'Proj.Max':>10} {'ΔTw':>8}")
+        print("  " + "-" * 88)
         for label, delta, color in climate_scenarios:
             proj_air = m_air_baseline + delta
             # Mohseni-derived delta: change in modeled Tw for the given air temp shift
             mohseni_dtw = float(mohseni(proj_air, *popt_all)) - m_tw_model
-            # Apply that delta to the OBSERVED baseline water temp
-            proj_tw = m_wt_baseline + mohseni_dtw
+            # Apply that delta to the OBSERVED baseline water temp (mean and max)
+            proj_tw     = m_wt_baseline + mohseni_dtw
+            proj_max_tw = m_wt_max      + mohseni_dtw
             print(f"  {label:<24} {delta:>+8.2f} {proj_air:>10.2f} {proj_tw:>10.2f}"
-                  f" {proj_tw*9/5+32:>12.2f} {mohseni_dtw:>+8.2f}")
+                  f" {proj_tw*9/5+32:>12.2f} {proj_max_tw:>10.2f} {mohseni_dtw:>+8.2f}")
             m_rows.append({
                 'Scenario': label, 'Month': month_name,
                 'Delta_Air_C': round(delta, 2),
@@ -904,6 +908,9 @@ def run_analysis(stations, air):
                 'Proj_Tw_F': round(proj_tw * 9/5 + 32, 2),
                 'Delta_Tw_C': round(mohseni_dtw, 2),
                 'Delta_Tw_F': round(mohseni_dtw * 9/5, 2),
+                'Obs_Max_Tw_C': round(m_wt_max, 2),
+                'Proj_Max_Tw_C': round(proj_max_tw, 2),
+                'Proj_Max_Tw_F': round(proj_max_tw * 9/5 + 32, 2),
                 'Color': color,
             })
         monthly_proj[month_name] = pd.DataFrame(m_rows)
@@ -1173,7 +1180,8 @@ def export_excel(results):
         ws5 = wb.create_sheet('Monthly Projections')
         ws5.append(['Month', 'Scenario', 'Baseline_Air_C', 'Delta_Air_C',
                      'Proj_Air_C', 'Obs_Baseline_Tw_C', 'Proj_Tw_C', 'Proj_Tw_F',
-                     'Delta_Tw_C', 'Delta_Tw_F'])
+                     'Delta_Tw_C', 'Delta_Tw_F',
+                     'Obs_Max_Tw_C', 'Proj_Max_Tw_C', 'Proj_Max_Tw_F'])
         style_header(ws5)
         for month_name in ['July', 'August']:
             mdf = monthly_proj[month_name]
@@ -1182,7 +1190,8 @@ def export_excel(results):
                            row['Baseline_Air_C'], row['Delta_Air_C'],
                            row['Proj_Air_C'], row['Obs_Baseline_Tw_C'],
                            row['Proj_Tw_C'], row['Proj_Tw_F'],
-                           row['Delta_Tw_C'], row['Delta_Tw_F']])
+                           row['Delta_Tw_C'], row['Delta_Tw_F'],
+                           row['Obs_Max_Tw_C'], row['Proj_Max_Tw_C'], row['Proj_Max_Tw_F']])
         autofit(ws5)
 
     # ═════════════════════════════════════════════════════════════════════════
