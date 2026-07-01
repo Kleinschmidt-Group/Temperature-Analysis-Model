@@ -81,13 +81,81 @@ Install with:
     pip install numpy pandas matplotlib scipy openpyxl
 
 
+DATA DOWNLOAD INSTRUCTIONS
+--------------------------
+
+Before running any of the analysis scripts, you must download the required
+input datasets from the sources below. The scripts do NOT fetch data from
+the internet — all data must be downloaded manually and placed in the
+locations referenced by the CONFIGURATION section of each script.
+
+1. WATER TEMPERATURE DATA (required for ALL analyses)
+   ---------------------------------------------------
+   Source: DART (Data Access in Real Time)
+           Columbia Basin Research, University of Washington
+   URL:    http://www.cbr.washington.edu/dart/query/river_graph_wmq
+
+   Download hourly water temperature records for each of the four stations
+   (FDRW, GCGW, CHJ, CHQW) covering 1995–2025. Save each station as a
+   multi-sheet Excel workbook (one sheet per year) using the file names:
+
+       FDRW_Hourly_Data_1995_2025.xlsx
+       GCGW_Hourly_Data_1995_2025.xlsx
+       CHJ_Hourly_Data_1995_2025.xlsx
+       CHQW_Hourly_Data_1995_2025.xlsx
+
+2. AIR TEMPERATURE DATA — CHIEF JOSEPH DAM ANALYSES
+   -------------------------------------------------
+   Source: NOAA National Centers for Environmental Information (NCEI)
+           Global Historical Climatology Network Daily (GHCND)
+   Station: DOUGLAS WASHINGTON, WA US (GHCND: USR0000WDOU)
+   URL:     https://www.ncei.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USR0000WDOU/detail
+
+   Download daily temperature data (TMAX, TMIN, TAVG) for 1995–2025 and save
+   as:
+
+       Douglas_Temp_1995_2025.csv
+
+3. AIR TEMPERATURE DATA — GRAND COULEE DAM ANALYSES
+   -------------------------------------------------
+   Source: U.S. Bureau of Reclamation (USBR) Agrimet / Hydromet
+   URL:    https://www.usbr.gov/pn/agrimet/webarcread.html
+
+   Download daily climatological data (ABEI MX, ABEI MN, ABEI MM) covering
+   March 1991 through June 2026 and save as:
+
+       DailyClimatologicalData.csv
+
+   Rows 1–19 of the downloaded file contain metadata; data headers begin on
+   row 20. Missing values are coded as "NO RECORD" and are handled
+   automatically by the scripts.
+
+4. MACAv2-METDATA CLIMATE FILES (OPTIONAL)
+   ----------------------------------------
+   Source: Climate Toolbox — Future Time Series Tool
+   URL:    https://climatetoolbox.org/tool/future-time-series
+
+   Download JJA maximum and minimum temperature time series for the
+   47.619 N, 119.899 W grid cell (Douglas County, WA) and save as:
+
+       FutureTimeSeriesMax.csv
+       FutureTimeSeriesMin.csv
+
+   If these files are not present, the scripts use pre-computed delta values
+   embedded in the code (see CLIMATE SCENARIOS below).
+
+After downloading, update the file paths in the CONFIGURATION section of each
+script to point to the correct locations on your machine.
+
+
 INPUT DATA
 ----------
 
 All four scripts use the same water temperature datasets plus dam-specific
 air temperature data and two optional MACA climate files. File paths are set
 in the CONFIGURATION section at the top of each script. Update these paths if
-data are moved.
+data are moved. See the DATA DOWNLOAD INSTRUCTIONS section above for source
+URLs and download details.
 
 
 Water temperature data (4 Excel files, one per station):
@@ -120,6 +188,7 @@ Air temperature data — CHIEF JOSEPH DAM analyses:
 
     Source:  NOAA National Centers for Environmental Information (NCEI)
              Global Historical Climatology Network Daily (GHCND)
+             https://www.ncei.noaa.gov/cdo-web/datasets/GHCND/stations/GHCND:USR0000WDOU/detail
     Station: DOUGLAS WASHINGTON, WA US (GHCND: USR0000WDOU)
              47.619 N, 119.899 W — approximately 10 miles from CJD
     Format:  CSV with columns DATE, TMAX, TMIN, TAVG (all in deg F)
@@ -134,6 +203,7 @@ Air temperature data — GRAND COULEE DAM analyses:
 
     Source:  U.S. Bureau of Reclamation (USBR)
              Agrimet / Hydromet meteorological station data
+             https://www.usbr.gov/pn/agrimet/webarcread.html
     Format:  CSV
              Rows 1–19 contain metadata
              Data headers begin on row 20
@@ -154,6 +224,7 @@ MACAv2-METDATA climate files (2 CSV files — optional):
 
     Source:  Climate Toolbox (climatetoolbox.org), MACAv2-METDATA
              (Abatzoglou & Brown 2012), 20 CMIP5 GCMs
+             https://climatetoolbox.org/tool/future-time-series
     Grid:    47.619 N, 119.899 W (Douglas County, WA)
     Note:    If these files are not present, the scripts use pre-computed
              delta values embedded in the code (see CLIMATE SCENARIOS below).
@@ -167,13 +238,16 @@ Forebay and Tailrace analyses of interest.
 
 For each script:
 
-    1. Verify that all required input data files are in place and that the
+    1. Download all required input data (see DATA DOWNLOAD INSTRUCTIONS
+       above) and place the files in accessible locations on your machine.
+
+    2. Verify that all required input data files are in place and that the
        file paths in the CONFIGURATION section point to them.
 
-    2. Verify that OUTPUT_DIR points to the desired output folder. The script
+    3. Verify that OUTPUT_DIR points to the desired output folder. The script
        will create this folder if it does not exist.
 
-    3. Run from the command line:
+    4. Run from the command line:
 
         For Chief Joseph Forebay analysis:
             python CJD_Analysis_Forebay.py
@@ -515,4 +589,3 @@ Washington Climate Change Impacts Assessment (WACCIA), Chapter 6 — Salmon.
 Mantua et al. (contributing authors).
 
 ================================================================================
-
