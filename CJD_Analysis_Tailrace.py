@@ -412,15 +412,19 @@ class TemperatureQAQC:
     @staticmethod
     def check_physical_bounds(df, temp_col, bounds_dict, source='water'):
         """Flag records falling outside monthly physical bounds."""
-        flags = []
-        for idx, row in df.iterrows():
-            month = row['month']
-            if month not in bounds_dict:
-                continue
-            lo, hi = bounds_dict[month]
-            if not (lo <= row[temp_col] <= hi):
-                flags.append({'idx': idx, 'issue': f'{temp_col}={row[temp_col]:.2f}°C outside bounds'})
-        return pd.DataFrame(flags) if flags else pd.DataFrame(columns=['idx', 'issue']), len(flags)
+        lo = df['month'].map({m: b[0] for m, b in bounds_dict.items()})
+        hi = df['month'].map({m: b[1] for m, b in bounds_dict.items()})
+        t = df[temp_col]
+        # Rows whose month is not in bounds_dict (lo/hi NaN) are skipped.
+        bad = lo.notna() & ~((lo <= t) & (t <= hi))
+        if not bad.any():
+            return pd.DataFrame(columns=['idx', 'issue']), 0
+        idx = df.index[bad]
+        flags = pd.DataFrame({
+            'idx': idx,
+            'issue': [f'{temp_col}={v:.2f}°C outside bounds' for v in t[bad]],
+        })
+        return flags, len(flags)
 
     @staticmethod
     def detect_outliers_iqr(series, iqr_multiplier=3.0):
@@ -435,19 +439,20 @@ class TemperatureQAQC:
     @staticmethod
     def detect_constant_spans(df, temp_col, min_span_hours=24, tolerance=0.05):
         """Flag long constant-temperature spans (sensor failure indicator)."""
-        flags, count = [], 0
-        df_sorted = df.sort_values('datetime')
+        # Greedy runs where each value stays within tolerance of the run's start.
+        vals = df.sort_values('datetime')[temp_col].to_numpy()
+        n = len(vals)
+        flags = []
         i = 0
-        sorted_idx = df_sorted.index.tolist()
-        while i < len(df_sorted):
+        while i < n:
             j = i
-            while j < len(df_sorted) and abs(df_sorted.iloc[j][temp_col] - df_sorted.iloc[i][temp_col]) < tolerance:
+            start = vals[i]
+            while j < n and abs(vals[j] - start) < tolerance:
                 j += 1
             if j - i >= min_span_hours:
                 flags.append({'duration_hours': j - i, 'note': 'Possible sensor failure'})
-                count = len(flags)
             i = j
-        return pd.DataFrame(flags) if flags else pd.DataFrame(), count
+        return pd.DataFrame(flags) if flags else pd.DataFrame(), len(flags)
 
     @staticmethod
     def detect_impossible_jumps(df, temp_col, max_hourly_change=3.0):
@@ -456,18 +461,15 @@ class TemperatureQAQC:
         EPA (2002) standard: >3°C flagged as suspect in large reservoirs.
         Reference: EPA Columbia River Temperature Assessment, Lake Roosevelt thermal regime study.
         """
-        df_sorted = df.sort_values('datetime')
-        flags, idx_list = [], []
-        for i in range(1, len(df_sorted)):
-            curr_idx = df_sorted.index[i]
-            prev_idx = df_sorted.index[i-1]
-            if pd.notna(df_sorted.loc[curr_idx, temp_col]) and pd.notna(df_sorted.loc[prev_idx, temp_col]):
-                dt = (df_sorted.loc[curr_idx, 'datetime'] - df_sorted.loc[prev_idx, 'datetime']).total_seconds() / 3600
-                dtemp = abs(df_sorted.loc[curr_idx, temp_col] - df_sorted.loc[prev_idx, temp_col])
-                if dt > 0 and dtemp / dt > max_hourly_change:
-                    flags.append({'idx': curr_idx, 'dtemp': dtemp, 'dt_hr': dt})
-                    idx_list.append(curr_idx)
-        return pd.DataFrame(flags) if flags else pd.DataFrame(), len(flags)
+        d = df.sort_values('datetime')
+        dt = d['datetime'].diff().dt.total_seconds() / 3600
+        dtemp = d[temp_col].diff().abs()
+        valid = d[temp_col].notna() & d[temp_col].shift().notna()
+        bad = valid & (dt > 0) & (dtemp / dt > max_hourly_change)
+        if not bad.any():
+            return pd.DataFrame(), 0
+        flags = pd.DataFrame({'idx': d.index[bad], 'dtemp': dtemp[bad], 'dt_hr': dt[bad]})
+        return flags, len(flags)
 
     @staticmethod
     def detect_data_gaps(df, freq='D'):
@@ -486,20 +488,19 @@ class TemperatureQAQC:
 
         df_sorted = df.sort_values(time_col)
         expected_freq = pd.to_timedelta(f'1{freq}')
-        gaps = []
-        for i in range(1, len(df_sorted)):
-            t_prev = df_sorted.iloc[i-1][time_col]
-            t_curr = df_sorted.iloc[i][time_col]
-            actual_gap = t_curr - t_prev
-            if actual_gap > expected_freq:
-                duration_days = actual_gap.total_seconds() / 86400.0
-                gaps.append({
-                    'gap_start': t_prev,
-                    'gap_end': t_curr,
-                    'duration_days': duration_days,
-                    'issue': f'Gap: {duration_days:.1f} days'
-                })
-        return pd.DataFrame(gaps) if gaps else pd.DataFrame(), len(gaps)
+        t = df_sorted[time_col]
+        gap = t.diff()
+        bad = gap > expected_freq
+        if not bad.any():
+            return pd.DataFrame(), 0
+        dur_days = gap[bad].dt.total_seconds() / 86400.0
+        gaps = pd.DataFrame({
+            'gap_start': t.shift()[bad],
+            'gap_end': t[bad],
+            'duration_days': dur_days,
+            'issue': [f'Gap: {d:.1f} days' for d in dur_days],
+        })
+        return gaps, len(gaps)
 
     @staticmethod
     def qaqc_report(source, report_dict):
@@ -522,6 +523,15 @@ def load_station(name, path):
     and return a tidy daily-resolution DataFrame.
     Includes QA/QC checks to flag/remove problematic records.
     """
+    # Reading the hourly .xlsx via openpyxl is the slowest step. Cache the
+    # cleaned/QA'd result and reuse it while the source file is unchanged.
+    cache = path + '.qaqc.pkl'
+    if os.path.isfile(cache) and os.path.getmtime(cache) >= os.path.getmtime(path):
+        print(f"  Loading {name} (cached) …")
+        df = pd.read_pickle(cache)
+        print(f"    → {len(df):,} hourly records (cached)  |  {df.year.min()}–{df.year.max()}")
+        return df
+
     print(f"  Loading {name} …")
     xl = pd.ExcelFile(path)
     df = pd.concat([xl.parse(s) for s in xl.sheet_names], ignore_index=True)
@@ -585,6 +595,10 @@ def load_station(name, path):
     # Final count
     df = df.sort_values('datetime').reset_index(drop=True)
     print(f"    → {len(df):,} hourly records after QA/QC  |  {df.year.min()}–{df.year.max()}")
+    try:
+        df.to_pickle(cache)
+    except Exception as e:
+        print(f"    [!] cache write skipped: {e}")
     return df
 
 
